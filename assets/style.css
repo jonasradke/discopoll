@@ -1,0 +1,24 @@
+/* style.css */
+
+body {
+    background: #f8f9fa; /* Light gray background (Bootstrap default) */
+  }
+  
+  .card {
+    border-radius: 6px;
+  }
+  
+  .btn {
+    border-radius: 4px;
+  }
+
+  
+/* Spinning Logo Animation */
+.spinning-logo {
+  animation: spin 10s linear infinite;
+}
+
+@keyframes spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
