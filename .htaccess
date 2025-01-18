@@ -1,8 +1,11 @@
 RewriteEngine On
 
+RewriteCond %{REQUEST_URI} !^/404\.php$
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^([^/]+)$ admin/$1.php [L]
 
+RewriteCond %{DOCUMENT_ROOT}/admin/$1.php -f
+RewriteRule ^([^/]+)/?$ admin/$1.php [L,QSA]
 ErrorDocument 404 /404.php
+
 
