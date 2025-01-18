@@ -15,8 +15,8 @@ http_response_code(404); // Make sure PHP sets the real HTTP status to 404
 <body>
     <div style="text-align: center; margin-top: 50px;">
         <h1>404 - Page Not Found</h1>
-        <p>Sorry, the page you requested could not be found.</p>
-        <p><a href="/">Go Home</a></p>
+        <p>Sorry, hier fliegen keine Frisbees.</p>
+        <p><a href="/">Startseite</a></p>
     </div>
 
 <?php include 'partials/footer.php'; ?>
