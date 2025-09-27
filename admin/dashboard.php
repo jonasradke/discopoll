@@ -90,6 +90,10 @@ $polls = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </td>
                 <td><?php echo $poll['created_at']; ?></td>
                 <td>
+                    <a href="view_poll?id=<?php echo $poll['id']; ?>" 
+                       class="btn btn-sm btn-info">
+                       Anzeigen
+                    </a>
                     <a href="edit_poll?id=<?php echo $poll['id']; ?>" 
                        class="btn btn-sm btn-primary">
                        Bearbeiten
