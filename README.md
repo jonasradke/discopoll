@@ -5,9 +5,15 @@ Es bietet dynamische Echtzeit-Aktualisierung von Umfrageergebnissen, ein Admin-B
 
 ## Inhaltsverzeichnis
 
-- [Funktionen](#funktionen)
-- [Verwendete Technologien](#verwendete-technologien)
-- [Installation](#installation)
+- [Disconnection Umfrage Tool](#disconnection-umfrage-tool)
+  - [Inhaltsverzeichnis](#inhaltsverzeichnis)
+  - [Funktionen](#funktionen)
+  - [Verwendete Technologien](#verwendete-technologien)
+  - [Installation](#installation)
+    - [1. Repository klonen](#1-repository-klonen)
+    - [2. Datenbank einrichten](#2-datenbank-einrichten)
+    - [3. Config](#3-config)
+  - [Upgrade für bestehende Installationen](#upgrade-für-bestehende-installationen)
 
 ---
 
@@ -16,7 +22,7 @@ Es bietet dynamische Echtzeit-Aktualisierung von Umfrageergebnissen, ein Admin-B
 - **Benutzer-Umfragen**: Besucher können an Umfragen teilnehmen und sehen die Ergebnisse live aktualisiert.
 - **Admin-Backend**: Sichere Login-Funktion, um neue Umfragen zu erstellen, bestehende zu bearbeiten oder zu löschen.
 - **Dynamische Optionsverwaltung**: Administratoren können Umfrageoptionen (Antworten) dynamisch hinzufügen oder entfernen, mit einer Mindestanzahl von zwei nicht-leeren Optionen.
-- **Archivierung**: Administratoren können Umfragen archivieren, um sie vor der Öffentlichkeit zu verbergen, ohne sie zu löschen. Archivierte Umfragen können jederzeit wiederhergestellt werden.
+- **Archivierung**: Umfragen können archiviert werden, ohne sie zu löschen. Archivierte Umfragen sind nicht mehr öffentlich sichtbar, können aber jederzeit wieder aktiviert werden.
 
 ---
 
@@ -67,24 +73,6 @@ CREATE TABLE IF NOT EXISTS poll_votes (
 
 Lege ein admin user und passwort fest. Hier ein Beispiel mit User: admin und Passwort: admin. Hier ein hashing tool https://bcrypt.online/
 
-### 3. Archivierung aktivieren (für bestehende Installationen)
-
-Falls du bereits eine bestehende Installation hast, führe folgende SQL-Befehle aus, um die Archivierungsfunktion zu aktivieren:
-
-```sql
-ALTER TABLE polls ADD COLUMN archived TINYINT(1) NOT NULL DEFAULT 0;
-CREATE INDEX idx_polls_archived ON polls(archived);
-```
-
-## Archivierung
-
-Das System unterstützt jetzt die Archivierung von Umfragen:
-
-- **Archivieren**: Umfragen können archiviert werden, um sie vor der Öffentlichkeit zu verbergen
-- **Wiederherstellen**: Archivierte Umfragen können jederzeit wiederhergestellt werden
-- **Separate Ansicht**: Administratoren können archivierte Umfragen in einer separaten Ansicht verwalten
-- **Sicherheit**: Archivierte Umfragen sind nicht für Abstimmungen verfügbar und werden nicht in der öffentlichen Ansicht angezeigt
-
 ```
 INSERT INTO `admin_users` (`id`, `username`, `password_hash`) VALUES
 (3, 'admin', '$2y$10$gnFPoXkf5WWYPtQCiRomKexrJsj3LmQY/.WcPVaS4Qoj8DKieQiM6');
@@ -100,3 +88,19 @@ $dbName = 'pollvotes';
 $user   = 'db_benutzer';
 $pass   = 'db_passwort';
 ```
+
+---
+
+## Upgrade für bestehende Installationen
+
+Falls du bereits eine ältere Version installiert hast und die neue Archivierungs-Funktion nutzen möchtest, führe folgende SQL-Befehle in deiner Datenbank aus:
+
+```sql
+-- Füge die archived-Spalte zur polls-Tabelle hinzu
+ALTER TABLE polls ADD COLUMN archived TINYINT(1) NOT NULL DEFAULT 0;
+
+-- Optional: Füge einen Index für bessere Performance hinzu
+CREATE INDEX idx_polls_archived ON polls(archived);
+```
+
+Diese Änderungen sind vollständig rückwärtskompatibel - bestehende Umfragen werden automatisch als "aktiv" (nicht archiviert) markiert.
