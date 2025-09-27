@@ -6,6 +6,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $option_id = $_POST['option_id'] ?? null;
 
     if (!empty($poll_id) && !empty($option_id)) {
+        // Check if the poll exists and is not archived
+        $stmt = $pdo->prepare("SELECT id FROM polls WHERE id = :poll_id AND archived = 0");
+        $stmt->execute([':poll_id' => $poll_id]);
+        $poll = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$poll) {
+            echo "Poll not found or has been archived.";
+            exit;
+        }
+        
         // Check if the user has already voted using a cookie
         if (isset($_COOKIE["voted_poll_$poll_id"])) {
             echo "You have already voted in this poll.";

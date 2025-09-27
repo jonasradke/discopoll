@@ -2,8 +2,8 @@
 include_once 'config.php';
 include 'partials/header.php';
 
-// Fetch all polls (latest first)
-$stmt = $pdo->query("SELECT * FROM polls ORDER BY created_at DESC");
+// Fetch all non-archived polls (latest first)
+$stmt = $pdo->query("SELECT * FROM polls WHERE archived = 0 ORDER BY created_at DESC");
 $allPolls = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
