@@ -128,104 +128,13 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         }
 
         .progress-fill {
-            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth animation */
+            transition: width 0.3s ease-out; /* Optimized transition */
         }
 
         /* Reduce repaints during animations */
         .live-dot, .live-dot::after {
             transform: translateZ(0);
             will-change: opacity, transform;
-        }
-
-        /* Enhanced animations */
-        .option-item {
-            animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.3s ease;
-        }
-
-        .option-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-        }
-
-        .option-item:nth-child(1) { animation-delay: 0.1s; }
-        .option-item:nth-child(2) { animation-delay: 0.2s; }
-        .option-item:nth-child(3) { animation-delay: 0.3s; }
-        .option-item:nth-child(4) { animation-delay: 0.4s; }
-        .option-item:nth-child(5) { animation-delay: 0.5s; }
-        .option-item:nth-child(6) { animation-delay: 0.6s; }
-
-        @keyframes slideInUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* Pulse animation for vote counts */
-        .vote-count {
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        /* Glow effect for progress bars */
-        .progress-fill {
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
-        }
-
-        .progress-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            animation: shimmer 2s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        /* Enhanced chart animations */
-        .chart-section canvas {
-            transition: all 0.3s ease;
-        }
-
-        .chart-section:hover canvas {
-            transform: scale(1.02);
-        }
-
-        /* Enhanced header effects */
-        .header {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            animation: headerShine 4s ease-in-out infinite;
-        }
-
-        @keyframes headerShine {
-            0% { left: -100%; }
-            100% { left: 100%; }
         }
 
         body {
@@ -291,16 +200,10 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              transition: all 0.3s ease;
          }
 
-        .qr-code:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-            animation: qrPulse 1s ease-in-out infinite;
-        }
-
-        @keyframes qrPulse {
-            0%, 100% { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); }
-            50% { box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4); }
-        }
+         .qr-code:hover {
+             transform: scale(1.05);
+             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+         }
 
          /* QR Code Modal */
          .qr-modal {
@@ -399,12 +302,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              background-clip: text;
              line-height: 1.2;
              position: relative;
-             animation: titleGlow 3s ease-in-out infinite alternate;
-         }
-
-         @keyframes titleGlow {
-             from { filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.3)); }
-             to { filter: drop-shadow(0 0 40px rgba(0, 212, 255, 0.6)); }
+             z-index: 1;
          }
 
         .poll-meta {
@@ -523,17 +421,9 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         }
 
         /* Results Section */
-         .results-section {
-             display: flex;
-             flex-direction: column;
-             gap: 2rem;
-             background: var(--glass-bg);
-             backdrop-filter: blur(30px);
-             border: 1px solid var(--glass-border);
-             border-radius: 20px;
-             padding: 2rem;
-             box-shadow: var(--shadow-dark);
-         }
+        .results-section {
+            space-y: 2rem;
+        }
 
         .option-item {
             background: var(--glass-bg);
@@ -561,13 +451,12 @@ $totalVotes = array_sum(array_column($options, 'votes'));
          .option-item:nth-child(7) { border-left: 3px solid var(--color-7); }
          .option-item:nth-child(8) { border-left: 3px solid var(--color-8); }
 
-         .option-header {
-             display: flex;
-             justify-content: space-between;
-             align-items: center;
-             margin-bottom: 1rem;
-             gap: 1rem;
-         }
+        .option-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
 
         .option-text {
             font-size: 1.5rem;
@@ -594,44 +483,31 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             color: var(--text-primary);
         }
 
-         .option-stats {
-             display: flex;
-             flex-direction: column;
-             align-items: flex-end;
-             gap: 0.5rem;
-             min-width: 100px;
-             text-align: right;
-             color: var(--text-secondary);
-         }
+        .option-stats {
+            text-align: right;
+            color: var(--text-secondary);
+        }
 
         .vote-count {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 700;
             display: block;
             color: #00d4ff;
-            line-height: 1;
-            text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
         }
 
         .percentage {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.3rem 0.8rem;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
         .progress-bar {
-            height: 14px;
-            background: rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
             overflow: hidden;
             position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .progress-fill {
@@ -694,13 +570,6 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             min-width: 400px;
             position: relative;
             overflow: hidden;
-            box-shadow: var(--shadow-dark);
-            transition: all 0.3s ease;
-        }
-
-        .chart-section:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
         .chart-section::before {
@@ -842,35 +711,24 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             text-align: center;
             padding: 4rem 2rem;
             color: var(--text-secondary);
-            background: var(--glass-bg);
-            backdrop-filter: blur(30px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            box-shadow: var(--shadow-dark);
-            margin: 2rem 0;
         }
 
         .no-votes-icon {
-            font-size: 5rem;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, #00d4ff, #007aff);
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.3));
         }
 
         .no-votes h2 {
             color: var(--text-primary);
             margin-bottom: 1rem;
-            font-size: 2rem;
-            font-weight: 700;
         }
 
         .no-votes p {
             color: var(--text-muted);
-            font-size: 1.1rem;
-            line-height: 1.6;
         }
 
         /* Responsive */
