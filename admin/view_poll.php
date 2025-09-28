@@ -302,31 +302,33 @@ const pollId = <?php echo $pollId; ?>;
 pollChart = window.pollChart || Chart.getChart('pollChart');
 <?php endif; ?>
 
-// Function to fetch results and update display (same as homepage and presentation)
+// Function to fetch results (exactly like homepage)
 function fetchResults() {
     const pollId = <?php echo $pollId; ?>;
+    console.log('Fetching results for poll:', pollId);
     $.get('../results.php', { poll_id: pollId }, function(data) {
+        console.log('Received data:', data);
         let totalVotes = data.reduce((sum, item) => sum + parseInt(item.votes, 10), 0);
+        if (totalVotes === 0) totalVotes = 1;
         
         // Update total votes display
-        $('[data-total-votes]').text(totalVotes);
+        $('[data-total-votes]').text(totalVotes > 1 ? totalVotes : (totalVotes === 1 ? 1 : 0));
 
         data.forEach(item => {
             const optionId = item.id;
             const votes = parseInt(item.votes, 10);
-            const newPerc = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
-            const formattedPerc = newPerc % 1 === 0 ? newPerc.toFixed(0) : newPerc.toFixed(1);
+            const newPerc = Math.round((votes / totalVotes) * 100);
 
             // Update vote count with proper pluralization
             const voteText = votes + ' Stimme' + (votes !== 1 ? 'n' : '');
             $(`[data-option-id="${optionId}"] [data-vote-count]`).text(voteText);
             
             // Update percentage
-            $(`[data-option-id="${optionId}"] [data-percentage]`).text('(' + formattedPerc + '%)');
+            $(`[data-option-id="${optionId}"] [data-percentage]`).text('(' + newPerc + '%)');
             
             // Update progress bar
             const $progressBar = $(`[data-option-id="${optionId}"] .progress-bar`);
-            $progressBar.css('width', formattedPerc + '%');
+            $progressBar.attr('aria-valuenow', newPerc).css('width', newPerc + '%');
         });
 
         // Update chart if it exists
@@ -336,12 +338,16 @@ function fetchResults() {
         }
         
         // Update statistics
-        updateStatistics(data, totalVotes);
+        if (totalVotes > 1) {
+            updateStatistics(data, totalVotes);
+        }
         
         // Update last updated indicator
         updateLastUpdated();
         
-    }, 'json');
+    }, 'json').fail(function(xhr, status, error) {
+        console.error('Failed to fetch results:', error);
+    });
 }
 
 
@@ -407,8 +413,9 @@ function formatDateTime(dateString) {
     return date.toLocaleString('de-DE');
 }
 
-// Start live updates
+// Start live updates (exactly like homepage)
 $(document).ready(function() {
+    console.log('Starting live updates for poll <?php echo $pollId; ?>');
     fetchResults(); // Initial load
     setInterval(fetchResults, 5000); // Update every 5 seconds
 });
