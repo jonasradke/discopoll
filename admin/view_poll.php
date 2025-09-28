@@ -134,33 +134,35 @@ $totalVotes = array_sum(array_column($options, 'votes'));
                 <div class="card-body">
                     <h5 class="card-title">Ergebnisse</h5>
                     
-                    <?php if ($totalVotes > 0): ?>
-                        <?php foreach ($options as $option): ?>
-                            <?php 
-                            $percentage = round(($option['votes'] / $totalVotes) * 100);
-                            ?>
-                            <div class="mb-3" data-option-id="<?php echo $option['id']; ?>">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span><?php echo htmlspecialchars($option['option_text']); ?></span>
-                                    <span class="text-muted">
-                                        <span class="vote-count"><?php echo $option['votes']; ?> Stimme<?php echo $option['votes'] !== 1 ? 'n' : ''; ?></span> 
-                                        <span class="vote-percentage">(<?php echo $percentage; ?>%)</span>
-                                    </span>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar" 
-                                         role="progressbar" 
-                                         style="width: <?php echo $percentage; ?>%;" 
-                                         aria-valuenow="<?php echo $percentage; ?>" 
-                                         aria-valuemin="0" 
-                                         aria-valuemax="100">
+                    <div id="results-container">
+                        <?php if ($totalVotes > 0): ?>
+                            <?php foreach ($options as $option): ?>
+                                <?php 
+                                $percentage = round(($option['votes'] / $totalVotes) * 100);
+                                ?>
+                                <div class="mb-3" data-option-id="<?php echo $option['id']; ?>">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span><?php echo htmlspecialchars($option['option_text']); ?></span>
+                                        <span class="text-muted">
+                                            <span class="vote-count"><?php echo $option['votes']; ?> Stimme<?php echo $option['votes'] !== 1 ? 'n' : ''; ?></span> 
+                                            <span class="vote-percentage">(<?php echo $percentage; ?>%)</span>
+                                        </span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar" 
+                                             role="progressbar" 
+                                             style="width: <?php echo $percentage; ?>%;" 
+                                             aria-valuenow="<?php echo $percentage; ?>" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <p class="text-muted">Noch keine Stimmen abgegeben.</p>
-                    <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <p class="text-muted" id="no-votes-message">Noch keine Stimmen abgegeben.</p>
+                        <?php endif; ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -279,6 +281,13 @@ function fetchResults(pollId) {
         // Update total votes display
         $('#total-votes').text(totalVotes);
         console.log('Updating poll data - Total votes:', totalVotes);
+        
+        // Hide "no votes" message if votes exist
+        if (totalVotes > 0) {
+            $('#no-votes-message').hide();
+        } else {
+            $('#no-votes-message').show();
+        }
 
         data.forEach(item => {
             const optionId = item.id;
@@ -320,9 +329,57 @@ function fetchResults(pollId) {
         // Update statistics
         updateStatistics(data);
         
+        // Show poll options if they don't exist and we have votes
+        if (totalVotes > 0) {
+            showPollOptions(data);
+        }
+        
     }, 'json').fail(function(xhr, status, error) {
         console.error('Failed to fetch poll results:', error);
     });
+}
+
+// Show poll options when votes come in
+function showPollOptions(data) {
+    const resultsContainer = document.getElementById('results-container');
+    if (!resultsContainer) return;
+    
+    // Check if poll options already exist
+    const existingOptions = resultsContainer.querySelectorAll('[data-option-id]');
+    if (existingOptions.length > 0) {
+        return; // Options already exist, just update them
+    }
+    
+    // Create poll options HTML
+    let optionsHTML = '';
+    data.forEach(item => {
+        const votes = parseInt(item.votes, 10);
+        const percentage = Math.round((votes / data.reduce((sum, opt) => sum + parseInt(opt.votes, 10), 0)) * 100);
+        
+        optionsHTML += `
+            <div class="mb-3" data-option-id="${item.id}">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span>${escapeHtml(item.option_text)}</span>
+                    <span class="text-muted">
+                        <span class="vote-count">${votes} Stimme${votes !== 1 ? 'n' : ''}</span> 
+                        <span class="vote-percentage">(${percentage}%)</span>
+                    </span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" 
+                         role="progressbar" 
+                         style="width: ${percentage}%;" 
+                         aria-valuenow="${percentage}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    // Replace the "no votes" message with poll options
+    resultsContainer.innerHTML = optionsHTML;
 }
 
 // Update statistics section
