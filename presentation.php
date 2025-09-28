@@ -128,7 +128,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         }
 
         .progress-fill {
-            transition: width 0.3s ease-out; /* Optimized transition */
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth animation */
         }
 
         /* Reduce repaints during animations */
@@ -137,16 +137,105 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             will-change: opacity, transform;
         }
 
-         body {
-             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-             background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
-             min-height: 100vh;
-             color: var(--text-primary);
-             overflow-x: hidden;
-             position: relative;
-             margin: 0;
-             padding: 0;
-         }
+        /* Enhanced animations */
+        .option-item {
+            animation: slideInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.3s ease;
+        }
+
+        .option-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .option-item:nth-child(1) { animation-delay: 0.1s; }
+        .option-item:nth-child(2) { animation-delay: 0.2s; }
+        .option-item:nth-child(3) { animation-delay: 0.3s; }
+        .option-item:nth-child(4) { animation-delay: 0.4s; }
+        .option-item:nth-child(5) { animation-delay: 0.5s; }
+        .option-item:nth-child(6) { animation-delay: 0.6s; }
+
+        @keyframes slideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Pulse animation for vote counts */
+        .vote-count {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* Glow effect for progress bars */
+        .progress-fill {
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        /* Enhanced chart animations */
+        .chart-section canvas {
+            transition: all 0.3s ease;
+        }
+
+        .chart-section:hover canvas {
+            transform: scale(1.02);
+        }
+
+        /* Enhanced header effects */
+        .header {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: headerShine 4s ease-in-out infinite;
+        }
+
+        @keyframes headerShine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
+            min-height: 100vh;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+        }
 
          /* Subtle background gradient */
          body::before {
@@ -171,7 +260,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
          /* Header */
          .header {
-             padding: 1.5rem 2rem;
+             padding: 2rem;
              text-align: center;
              background: var(--glass-bg);
              backdrop-filter: blur(30px);
@@ -202,10 +291,16 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              transition: all 0.3s ease;
          }
 
-         .qr-code:hover {
-             transform: scale(1.05);
-             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-         }
+        .qr-code:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            animation: qrPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes qrPulse {
+            0%, 100% { box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2); }
+            50% { box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4); }
+        }
 
          /* QR Code Modal */
          .qr-modal {
@@ -304,7 +399,12 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              background-clip: text;
              line-height: 1.2;
              position: relative;
-             z-index: 1;
+             animation: titleGlow 3s ease-in-out infinite alternate;
+         }
+
+         @keyframes titleGlow {
+             from { filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.3)); }
+             to { filter: drop-shadow(0 0 40px rgba(0, 212, 255, 0.6)); }
          }
 
         .poll-meta {
@@ -410,40 +510,38 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1.5rem 2rem;
-            min-height: calc(100vh - 200px);
+            padding: 3rem 2rem;
         }
 
         .results-grid {
             display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 3rem;
+            grid-template-columns: 1fr auto;
+            gap: 4rem;
             width: 100%;
-            max-width: 100%;
-            align-items: start;
-            margin: 0;
+            max-width: 1400px;
+            align-items: center;
         }
 
         /* Results Section */
-        .results-section {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            background: var(--glass-bg);
-            backdrop-filter: blur(30px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: var(--shadow-dark);
-        }
+         .results-section {
+             display: flex;
+             flex-direction: column;
+             gap: 2rem;
+             background: var(--glass-bg);
+             backdrop-filter: blur(30px);
+             border: 1px solid var(--glass-border);
+             border-radius: 20px;
+             padding: 2rem;
+             box-shadow: var(--shadow-dark);
+         }
 
         .option-item {
             background: var(--glass-bg);
             backdrop-filter: blur(30px);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
@@ -463,13 +561,13 @@ $totalVotes = array_sum(array_column($options, 'votes'));
          .option-item:nth-child(7) { border-left: 3px solid var(--color-7); }
          .option-item:nth-child(8) { border-left: 3px solid var(--color-8); }
 
-        .option-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            gap: 1rem;
-        }
+         .option-header {
+             display: flex;
+             justify-content: space-between;
+             align-items: center;
+             margin-bottom: 1rem;
+             gap: 1rem;
+         }
 
         .option-text {
             font-size: 1.5rem;
@@ -496,15 +594,15 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             color: var(--text-primary);
         }
 
-        .option-stats {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 0.5rem;
-            min-width: 100px;
-            text-align: right;
-            color: var(--text-secondary);
-        }
+         .option-stats {
+             display: flex;
+             flex-direction: column;
+             align-items: flex-end;
+             gap: 0.5rem;
+             min-width: 100px;
+             text-align: right;
+             color: var(--text-secondary);
+         }
 
         .vote-count {
             font-size: 2.2rem;
@@ -590,13 +688,19 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             background: var(--glass-bg);
             backdrop-filter: blur(30px);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 2rem;
+            border-radius: 24px;
+            padding: 3rem;
             text-align: center;
-            min-width: 350px;
+            min-width: 400px;
             position: relative;
             overflow: hidden;
             box-shadow: var(--shadow-dark);
+            transition: all 0.3s ease;
+        }
+
+        .chart-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
         .chart-section::before {
@@ -736,7 +840,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         /* No votes state */
         .no-votes {
             text-align: center;
-            padding: 3rem 2rem;
+            padding: 4rem 2rem;
             color: var(--text-secondary);
             background: var(--glass-bg);
             backdrop-filter: blur(30px);
