@@ -196,6 +196,62 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              display: flex;
              align-items: center;
              justify-content: center;
+             cursor: pointer;
+             transition: all 0.3s ease;
+         }
+
+         .qr-code:hover {
+             transform: scale(1.05);
+             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+         }
+
+         /* QR Code Modal */
+         .qr-modal {
+             display: none;
+             position: fixed;
+             z-index: 10000;
+             left: 0;
+             top: 0;
+             width: 100%;
+             height: 100%;
+             background-color: rgba(0, 0, 0, 0.8);
+             backdrop-filter: blur(10px);
+         }
+
+         .qr-modal-content {
+             position: absolute;
+             top: 50%;
+             left: 50%;
+             transform: translate(-50%, -50%);
+             background: white;
+             border-radius: 20px;
+             padding: 2rem;
+             text-align: center;
+             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+             max-width: 90vw;
+             max-height: 90vh;
+         }
+
+         .qr-modal img {
+             max-width: 300px;
+             max-height: 300px;
+             border-radius: 12px;
+         }
+
+         .qr-modal-close {
+             position: absolute;
+             top: 1rem;
+             right: 1rem;
+             background: none;
+             border: none;
+             font-size: 2rem;
+             color: #666;
+             cursor: pointer;
+             padding: 0.5rem;
+         }
+
+         .qr-modal-close:hover {
+             color: #000;
          }
 
          .qr-code img {
@@ -779,7 +835,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              
              <!-- QR Code -->
              <div class="qr-code-container">
-                 <div class="qr-code" id="qrCode"></div>
+                 <div class="qr-code" id="qrCode" onclick="openQRModal()"></div>
                  <p class="qr-text">Scan to vote</p>
              </div>
         </div>
@@ -1030,6 +1086,8 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         
         // Generate QR code for the poll using QR Server API (OPTIMIZED - runs once)
         let qrCodeGenerated = false;
+        let qrCodeUrl = '';
+        
         function generateQRCode() {
             if (qrCodeGenerated) return; // Only generate once
             qrCodeGenerated = true;
@@ -1038,13 +1096,51 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             const pollUrl = `${window.location.origin}${window.location.pathname.replace('/presentation', '')}?id=${pollId}`;
             
             // Use QR Server API to generate QR code
-            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=104x104&data=${encodeURIComponent(pollUrl)}`;
+            qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=104x104&data=${encodeURIComponent(pollUrl)}`;
             
             const qrCodeElement = document.getElementById('qrCode');
             if (qrCodeElement) {
                 qrCodeElement.innerHTML = `<img src="${qrCodeUrl}" alt="QR Code" style="width: 100%; height: 100%; border-radius: 8px;" onerror="this.parentElement.innerHTML='<div style=\'color: #666; font-size: 12px; text-align: center; padding: 20px;\'>QR Code<br>Error</div>'">`;
             }
         }
+
+        // QR Modal functions
+        function openQRModal() {
+            const modal = document.getElementById('qrModal');
+            const modalImage = document.getElementById('qrModalImage');
+            
+            if (modal && modalImage && qrCodeUrl) {
+                // Create larger QR code for modal
+                const largeQRUrl = qrCodeUrl.replace('size=104x104', 'size=300x300');
+                modalImage.innerHTML = `<img src="${largeQRUrl}" alt="QR Code" style="width: 100%; height: auto; border-radius: 12px;">`;
+                modal.style.display = 'block';
+            }
+        }
+
+        function closeQRModal() {
+            const modal = document.getElementById('qrModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('qrModal');
+            if (event.target === modal) {
+                closeQRModal();
+            }
+        }
     </script>
+
+    <!-- QR Code Modal -->
+    <div id="qrModal" class="qr-modal">
+        <div class="qr-modal-content">
+            <button class="qr-modal-close" onclick="closeQRModal()">&times;</button>
+            <h3 style="margin-bottom: 1rem; color: #333;">Scan to Vote</h3>
+            <div id="qrModalImage"></div>
+            <p style="margin-top: 1rem; color: #666; font-size: 0.9rem;">Use your phone camera to scan this QR code</p>
+        </div>
+    </div>
 </body>
 </html>

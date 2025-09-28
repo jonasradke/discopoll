@@ -274,7 +274,7 @@ window.pollChart = new Chart(ctx, {
 function fetchResults(pollId) {
     $.get('../results.php', { poll_id: pollId }, function(data) {
         let totalVotes = data.reduce((sum, item) => sum + parseInt(item.votes, 10), 0);
-        if (totalVotes === 0) totalVotes = 1;
+        const divisor = totalVotes > 0 ? totalVotes : 1;
 
         // Update total votes display
         $('#total-votes').text(totalVotes === 1 && data.every(item => item.votes == 0) ? 0 : totalVotes);
@@ -282,7 +282,7 @@ function fetchResults(pollId) {
         data.forEach(item => {
             const optionId = item.id;
             const votes = parseInt(item.votes, 10);
-            const newPerc = Math.round((votes / totalVotes) * 100);
+            const newPerc = Math.round((votes / divisor) * 100);
 
             // Update vote count
             $(`[data-option-id="${optionId}"] .vote-count`).text(`${votes} Stimme${votes !== 1 ? 'n' : ''}`);
