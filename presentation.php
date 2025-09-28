@@ -747,6 +747,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              .header {
                  padding: 1.5rem 1rem;
                  padding-top: 4rem; /* Make room for floating logo */
+                 text-align: center;
              }
 
              .floating-logo {
@@ -762,6 +763,36 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              .poll-title {
                  font-size: clamp(1.5rem, 4vw, 2.5rem);
                  margin-bottom: 0.5rem;
+                 line-height: 1.2;
+             }
+
+             .poll-meta {
+                 display: flex;
+                 flex-direction: column;
+                 align-items: center;
+                 gap: 0.5rem;
+                 margin: 1rem 0;
+             }
+
+             .live-indicator {
+                 margin-top: 0.5rem;
+             }
+
+             .qr-code-container {
+                 margin-top: 1rem;
+                 display: flex;
+                 flex-direction: column;
+                 align-items: center;
+                 gap: 0.5rem;
+             }
+
+             .qr-code {
+                 width: 100px;
+                 height: 100px;
+             }
+
+             .qr-text {
+                 font-size: 0.8rem;
              }
              
              .main-content {
@@ -787,6 +818,55 @@ $totalVotes = array_sum(array_column($options, 'votes'));
                  height: 35px;
                  font-size: 0.9rem;
                  padding: 0.5rem;
+             }
+         }
+
+         /* Extra small mobile screens */
+         @media (max-width: 480px) {
+             .header {
+                 padding: 1rem 0.5rem;
+                 padding-top: 3.5rem;
+             }
+
+             .poll-title {
+                 font-size: clamp(1.2rem, 5vw, 2rem);
+                 margin-bottom: 0.75rem;
+             }
+
+             .poll-meta {
+                 font-size: 0.9rem;
+                 gap: 0.25rem;
+             }
+
+             .qr-code {
+                 width: 80px;
+                 height: 80px;
+             }
+
+             .qr-text {
+                 font-size: 0.75rem;
+             }
+
+             .floating-logo {
+                 top: 0.25rem;
+                 left: 0.25rem;
+             }
+
+             .spinning-logo {
+                 height: 35px;
+                 width: 35px;
+             }
+
+             .controls {
+                 top: 0.25rem;
+                 right: 0.25rem;
+             }
+
+             .control-btn {
+                 width: 32px;
+                 height: 32px;
+                 font-size: 0.8rem;
+                 padding: 0.4rem;
              }
          }
 
