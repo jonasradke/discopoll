@@ -842,29 +842,30 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
         <!-- Main Content -->
         <div class="main-content">
-            <?php if ($totalVotes > 0): ?>
-                <div class="results-grid">
-                    <!-- Results -->
-                    <div class="results-section">
-                        <?php foreach ($options as $option): ?>
-                            <?php 
-                            $percentage = $totalVotes > 0 ? ($option['votes'] / $totalVotes) * 100 : 0;
-                            $formattedPercentage = ($percentage == floor($percentage)) ? number_format($percentage, 0) : number_format($percentage, 1);
-                            ?>
-                            <div class="option-item" data-option="<?php echo $option['id']; ?>">
-                                <div class="option-header">
-                                    <div class="option-text"><?php echo htmlspecialchars($option['option_text']); ?></div>
-                                    <div class="option-stats">
-                                        <span class="vote-count"><?php echo $option['votes']; ?></span>
-                                        <span class="percentage"><?php echo $formattedPercentage; ?>%</span>
+            <div id="results-container">
+                <?php if ($totalVotes > 0): ?>
+                    <div class="results-grid">
+                        <!-- Results -->
+                        <div class="results-section">
+                            <?php foreach ($options as $option): ?>
+                                <?php 
+                                $percentage = $totalVotes > 0 ? ($option['votes'] / $totalVotes) * 100 : 0;
+                                $formattedPercentage = ($percentage == floor($percentage)) ? number_format($percentage, 0) : number_format($percentage, 1);
+                                ?>
+                                <div class="option-item" data-option="<?php echo $option['id']; ?>">
+                                    <div class="option-header">
+                                        <div class="option-text"><?php echo htmlspecialchars($option['option_text']); ?></div>
+                                        <div class="option-stats">
+                                            <span class="vote-count"><?php echo $option['votes']; ?></span>
+                                            <span class="percentage"><?php echo $formattedPercentage; ?>%</span>
+                                        </div>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: <?php echo $percentage; ?>%;"></div>
                                     </div>
                                 </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: <?php echo $percentage; ?>%;"></div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+                            <?php endforeach; ?>
+                        </div>
 
                     <!-- Chart -->
                     <div class="chart-section">
@@ -872,13 +873,14 @@ $totalVotes = array_sum(array_column($options, 'votes'));
                         <canvas id="presentationChart"></canvas>
                     </div>
                 </div>
-            <?php else: ?>
-                <div class="no-votes">
-                    <div class="no-votes-icon">📊</div>
-                    <h2>Noch keine Stimmen</h2>
-                    <p>Die Umfrage wartet auf die ersten Teilnehmer.</p>
-                </div>
-            <?php endif; ?>
+                <?php else: ?>
+                    <div class="no-votes" id="no-votes-message">
+                        <div class="no-votes-icon">📊</div>
+                        <h2>Noch keine Stimmen</h2>
+                        <p>Die Umfrage wartet auf die ersten Teilnehmer.</p>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
 
         <!-- Navigation -->
@@ -988,6 +990,13 @@ $totalVotes = array_sum(array_column($options, 'votes'));
                  // Update total votes display (batch DOM updates)
                  $totalVotes.text(totalVotes);
                  $votesPlural.text(totalVotes !== 1 ? 'n' : '');
+                 
+                 // Hide "no votes" message if votes exist
+                 if (totalVotes > 0) {
+                     $('#no-votes-message').hide();
+                 } else {
+                     $('#no-votes-message').show();
+                 }
 
                  // Process all options in one batch
                  const updates = [];
@@ -1026,6 +1035,11 @@ $totalVotes = array_sum(array_column($options, 'votes'));
                          window.presentationChart.data.datasets[0].data = newData;
                          window.presentationChart.update('active');
                      }
+                 }
+                 
+                 // Show poll options if they don't exist and we have votes
+                 if (totalVotes > 0) {
+                     showPollOptions(data);
                  }
              }, 'json').fail(function() {
                  // Silent fail to avoid console spam
@@ -1130,6 +1144,109 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             if (event.target === modal) {
                 closeQRModal();
             }
+        }
+
+        // Show poll options when votes come in
+        function showPollOptions(data) {
+            const resultsContainer = document.getElementById('results-container');
+            if (!resultsContainer) return;
+            
+            // Check if poll options already exist
+            const existingOptions = resultsContainer.querySelectorAll('[data-option]');
+            if (existingOptions.length > 0) {
+                return; // Options already exist, just update them
+            }
+            
+            // Create poll options HTML
+            let optionsHTML = '';
+            const totalVotes = data.reduce((sum, item) => sum + parseInt(item.votes, 10), 0);
+            
+            optionsHTML += '<div class="results-grid">';
+            optionsHTML += '<div class="results-section">';
+            
+            data.forEach(item => {
+                const votes = parseInt(item.votes, 10);
+                const percentage = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
+                const formattedPercentage = percentage % 1 === 0 ? percentage.toFixed(0) : percentage.toFixed(1);
+                
+                optionsHTML += `
+                    <div class="option-item" data-option="${item.id}">
+                        <div class="option-header">
+                            <div class="option-text">${escapeHtml(item.option_text)}</div>
+                            <div class="option-stats">
+                                <span class="vote-count">${votes}</span>
+                                <span class="percentage">${formattedPercentage}%</span>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percentage}%;"></div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            optionsHTML += '</div>';
+            
+            // Add chart section if we have votes
+            if (totalVotes > 0) {
+                optionsHTML += `
+                    <div class="chart-section">
+                        <h3 class="chart-title">Verteilung</h3>
+                        <canvas id="presentationChart"></canvas>
+                    </div>
+                `;
+            }
+            
+            optionsHTML += '</div>';
+            
+            // Replace the "no votes" message with poll options
+            resultsContainer.innerHTML = optionsHTML;
+            
+            // Initialize chart if we have votes
+            if (totalVotes > 0) {
+                initializeChart(data);
+            }
+        }
+
+        // Initialize chart for dynamic content
+        function initializeChart(data) {
+            const ctx = document.getElementById('presentationChart');
+            if (!ctx) return;
+            
+            window.presentationChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(item => item.option_text),
+                    datasets: [{
+                        data: data.map(item => item.votes),
+                        backgroundColor: [
+                            '#ff3b30', '#007aff', '#34c759', '#ff9500',
+                            '#af52de', '#ffcc02', '#ff2d92', '#00d4aa'
+                        ],
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
     </script>
 
