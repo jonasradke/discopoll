@@ -341,29 +341,36 @@ function updateStatistics(data) {
 
 // Update recent activity section
 function updateRecentActivity(pollId) {
-    $.get('../results.php', { poll_id: pollId, include_activity: 1 }, function(activityData) {
-        // This will be handled by a separate endpoint, for now let's use a simpler approach
-        // We'll fetch recent activity separately
-    }, 'json').fail(function() {
-        // Fallback: fetch recent activity via separate call
-        fetchRecentActivity(pollId);
-    });
+    console.log('Updating recent activity for poll:', pollId);
+    fetchRecentActivity(pollId);
 }
 
 // Fetch recent activity
 function fetchRecentActivity(pollId) {
+    console.log('Fetching recent activity for poll:', pollId);
     $.get('get_recent_activity.php', { poll_id: pollId }, function(data) {
+        console.log('Activity data received:', data);
         const activityTable = document.getElementById('recent-activity');
-        if (activityTable && data.length > 0) {
-            activityTable.innerHTML = data.map(vote => `
-                <tr>
-                    <td><small class="text-muted">${formatTime(vote.voted_at)}</small></td>
-                    <td>${escapeHtml(vote.option_text)}</td>
-                </tr>
-            `).join('');
+        console.log('Activity table element:', activityTable);
+        if (activityTable) {
+            if (data && data.length > 0) {
+                console.log('Updating activity table with', data.length, 'items');
+                activityTable.innerHTML = data.map(vote => `
+                    <tr>
+                        <td><small class="text-muted">${formatTime(vote.voted_at)}</small></td>
+                        <td>${escapeHtml(vote.option_text)}</td>
+                    </tr>
+                `).join('');
+            } else {
+                console.log('No activity data, showing placeholder');
+                activityTable.innerHTML = '<tr><td colspan="2" class="text-muted text-center">Noch keine Aktivität</td></tr>';
+            }
+        } else {
+            console.log('Activity table not found!');
         }
-    }, 'json').fail(function() {
-        console.log('Recent activity update failed - endpoint may not exist yet');
+    }, 'json').fail(function(xhr, status, error) {
+        console.log('Recent activity update failed:', error);
+        console.log('Response:', xhr.responseText);
     });
 }
 
