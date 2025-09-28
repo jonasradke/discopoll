@@ -308,6 +308,9 @@ function fetchResults(pollId) {
         // Update statistics
         updateStatistics(data);
         
+        // Update recent activity
+        updateRecentActivity(pollId);
+        
     }, 'json').fail(function(xhr, status, error) {
         console.error('Failed to fetch poll results:', error);
     });
@@ -334,6 +337,44 @@ function updateStatistics(data) {
     } else {
         statsContent.innerHTML = '<p class="text-muted">Noch keine Stimmen abgegeben.</p>';
     }
+}
+
+// Update recent activity section
+function updateRecentActivity(pollId) {
+    $.get('../results.php', { poll_id: pollId, include_activity: 1 }, function(activityData) {
+        // This will be handled by a separate endpoint, for now let's use a simpler approach
+        // We'll fetch recent activity separately
+    }, 'json').fail(function() {
+        // Fallback: fetch recent activity via separate call
+        fetchRecentActivity(pollId);
+    });
+}
+
+// Fetch recent activity
+function fetchRecentActivity(pollId) {
+    $.get('get_recent_activity.php', { poll_id: pollId }, function(data) {
+        const activityTable = document.getElementById('recent-activity');
+        if (activityTable && data.length > 0) {
+            activityTable.innerHTML = data.map(vote => `
+                <tr>
+                    <td><small class="text-muted">${formatTime(vote.voted_at)}</small></td>
+                    <td>${escapeHtml(vote.option_text)}</td>
+                </tr>
+            `).join('');
+        }
+    }, 'json').fail(function() {
+        console.log('Recent activity update failed - endpoint may not exist yet');
+    });
+}
+
+// Format time for display
+function formatTime(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('de-DE', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+    });
 }
 
 // Helper function to escape HTML
