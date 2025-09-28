@@ -137,14 +137,16 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             will-change: opacity, transform;
         }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
-            min-height: 100vh;
-            color: var(--text-primary);
-            overflow-x: hidden;
-            position: relative;
-        }
+         body {
+             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+             background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
+             min-height: 100vh;
+             color: var(--text-primary);
+             overflow-x: hidden;
+             position: relative;
+             margin: 0;
+             padding: 0;
+         }
 
          /* Subtle background gradient */
          body::before {
@@ -169,7 +171,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
          /* Header */
          .header {
-             padding: 2rem;
+             padding: 1.5rem 2rem;
              text-align: center;
              background: var(--glass-bg);
              backdrop-filter: blur(30px);
@@ -408,17 +410,18 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 3rem 2rem;
+            padding: 1.5rem 2rem;
+            min-height: calc(100vh - 200px);
         }
 
         .results-grid {
             display: grid;
             grid-template-columns: 1fr 400px;
-            gap: 4rem;
+            gap: 3rem;
             width: 100%;
-            max-width: 1600px;
+            max-width: 100%;
             align-items: start;
-            margin: 0 auto;
+            margin: 0;
         }
 
         /* Results Section */
@@ -430,7 +433,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             backdrop-filter: blur(30px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
-            padding: 2.5rem;
+            padding: 2rem;
             box-shadow: var(--shadow-dark);
         }
 
@@ -438,9 +441,9 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             background: var(--glass-bg);
             backdrop-filter: blur(30px);
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
@@ -464,7 +467,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
             gap: 1rem;
         }
 
@@ -487,12 +490,10 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         }
 
         .option-text {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: 600;
             flex: 1;
             color: var(--text-primary);
-            line-height: 1.4;
-            margin-right: 1rem;
         }
 
         .option-stats {
@@ -500,12 +501,15 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             flex-direction: column;
             align-items: flex-end;
             gap: 0.5rem;
-            min-width: 120px;
+            min-width: 100px;
+            text-align: right;
+            color: var(--text-secondary);
         }
 
         .vote-count {
             font-size: 2.2rem;
             font-weight: 700;
+            display: block;
             color: #00d4ff;
             line-height: 1;
             text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
@@ -586,16 +590,13 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             background: var(--glass-bg);
             backdrop-filter: blur(30px);
             border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 3rem;
+            border-radius: 16px;
+            padding: 2rem;
             text-align: center;
-            min-width: 400px;
+            min-width: 350px;
             position: relative;
             overflow: hidden;
             box-shadow: var(--shadow-dark);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
         }
 
         .chart-section::before {
@@ -610,14 +611,12 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         }
 
         .chart-title {
-            font-size: 1.6rem;
-            font-weight: 700;
+            font-size: 1.5rem;
+            font-weight: 600;
             margin-bottom: 2rem;
             color: var(--text-primary);
             position: relative;
             z-index: 1;
-            text-align: center;
-            letter-spacing: 0.5px;
         }
 
         #presentationChart {
@@ -737,7 +736,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         /* No votes state */
         .no-votes {
             text-align: center;
-            padding: 4rem 2rem;
+            padding: 3rem 2rem;
             color: var(--text-secondary);
             background: var(--glass-bg);
             backdrop-filter: blur(30px);
