@@ -164,8 +164,8 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
          .floating-logo {
              position: fixed;
-             top: 2rem;
-             left: 2rem;
+             top: 1rem;
+             left: 1rem;
              z-index: 999;
          }
 
@@ -645,8 +645,8 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              }
 
              .floating-logo {
-                 top: 1rem;
-                 left: 1rem;
+                 top: 0.5rem;
+                 left: 0.5rem;
              }
 
              .spinning-logo {
