@@ -2,15 +2,30 @@
 include_once 'config.php';
 include 'partials/header.php';
 
-// Fetch all non-archived polls (latest first)
-$stmt = $pdo->query("SELECT * FROM polls WHERE archived = 0 ORDER BY created_at DESC");
-$allPolls = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Check if a specific poll ID is requested
+$pollId = isset($_GET['id']) ? (int)$_GET['id'] : null;
+
+if ($pollId) {
+    // Show only the specific poll
+    $stmt = $pdo->prepare("SELECT * FROM polls WHERE id = :id AND archived = 0");
+    $stmt->execute([':id' => $pollId]);
+    $allPolls = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    if (empty($allPolls)) {
+        // Poll not found or archived
+        $allPolls = [];
+    }
+} else {
+    // Fetch all non-archived polls (latest first)
+    $stmt = $pdo->query("SELECT * FROM polls WHERE archived = 0 ORDER BY created_at DESC");
+    $allPolls = $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Alle Laufenden Umfragen</title>
+    <title><?php echo $pollId ? 'Umfrage' : 'Alle Laufenden Umfragen'; ?></title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Optional custom CSS -->
@@ -29,11 +44,27 @@ $allPolls = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body class="bg-light">
 
 <div class="container py-5">
-    <h1 class="mb-4 text-center">Alle Laufenden Umfragen</h1>
-    
-    <?php if (count($allPolls) === 0): ?>
-        <div class="alert alert-info text-center">Keine Umfragen verfügbar.</div>
+    <?php if ($pollId): ?>
+        <h1 class="mb-4 text-center">Umfrage</h1>
+        <?php if (count($allPolls) === 0): ?>
+            <div class="alert alert-warning text-center">
+                <h4>Umfrage nicht gefunden</h4>
+                <p>Diese Umfrage existiert nicht oder wurde archiviert.</p>
+                <a href="/" class="btn btn-primary">Alle Umfragen anzeigen</a>
+            </div>
+        <?php else: ?>
+            <div class="alert alert-info text-center mb-4">
+                <i class="bi bi-qr-code"></i> Sie haben diese Umfrage über einen QR-Code aufgerufen.
+                <a href="/" class="btn btn-outline-primary btn-sm ms-2">Alle Umfragen anzeigen</a>
+            </div>
+        <?php endif; ?>
     <?php else: ?>
+        <h1 class="mb-4 text-center">Alle Laufenden Umfragen</h1>
+    <?php endif; ?>
+    
+    <?php if (count($allPolls) === 0 && !$pollId): ?>
+        <div class="alert alert-info text-center">Keine Umfragen verfügbar.</div>
+    <?php elseif (count($allPolls) > 0): ?>
         <div class="d-flex flex-wrap justify-content-center gap-3">
             <?php foreach ($allPolls as $poll): ?>
                 <?php
