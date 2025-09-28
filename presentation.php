@@ -893,7 +893,6 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
     <!-- jQuery for AJAX -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     
     <script>
          // Function to fetch results for the current poll and animate progress bars
@@ -987,26 +986,16 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             generateQRCode();
         });
         
-        // Generate QR code for the poll
+        // Generate QR code for the poll using QR Server API
         function generateQRCode() {
             const pollId = <?php echo $currentPoll['id']; ?>;
             const pollUrl = `${window.location.origin}${window.location.pathname.replace('/presentation', '')}?id=${pollId}`;
             
-            QRCode.toCanvas(document.getElementById('qrCode'), pollUrl, {
-                width: 104,
-                height: 104,
-                color: {
-                    dark: '#000000',
-                    light: '#FFFFFF'
-                },
-                margin: 1,
-                errorCorrectionLevel: 'M'
-            }, function (error) {
-                if (error) {
-                    console.error('QR Code generation failed:', error);
-                    document.getElementById('qrCode').innerHTML = '<div style="color: #666; font-size: 12px; text-align: center; padding: 20px;">QR Code<br>Error</div>';
-                }
-            });
+            // Use QR Server API to generate QR code
+            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=104x104&data=${encodeURIComponent(pollUrl)}`;
+            
+            const qrCodeElement = document.getElementById('qrCode');
+            qrCodeElement.innerHTML = `<img src="${qrCodeUrl}" alt="QR Code" style="width: 100%; height: 100%; border-radius: 8px;" onerror="this.parentElement.innerHTML='<div style=\'color: #666; font-size: 12px; text-align: center; padding: 20px;\'>QR Code<br>Error</div>'">`;
         }
     </script>
 </body>
