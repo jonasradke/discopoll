@@ -90,25 +90,26 @@ $totalVotes = array_sum(array_column($options, 'votes'));
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        :root {
-            --bg-primary: #0f0f23;
-            --bg-secondary: #1a1a2e;
-            --bg-tertiary: #16213e;
-            --accent-primary: #00d4ff;
-            --accent-secondary: #ff6b6b;
-            --accent-tertiary: #4ecdc4;
-            --accent-quaternary: #45b7d1;
-            --accent-success: #96ceb4;
-            --accent-warning: #ffeaa7;
-            --accent-purple: #a29bfe;
-            --text-primary: #ffffff;
-            --text-secondary: #b8c6db;
-            --text-muted: #74b9ff;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.3);
-            --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
-        }
+         :root {
+             --bg-primary: #0f0f23;
+             --bg-secondary: #1a1a2e;
+             --bg-tertiary: #16213e;
+             --color-1: #ff3b30;    /* Bright Red */
+             --color-2: #007aff;    /* Bright Blue */
+             --color-3: #34c759;    /* Bright Green */
+             --color-4: #ff9500;    /* Bright Orange */
+             --color-5: #af52de;    /* Bright Purple */
+             --color-6: #ffcc02;    /* Bright Yellow */
+             --color-7: #ff2d92;    /* Bright Pink */
+             --color-8: #00d4aa;    /* Bright Teal */
+             --text-primary: #ffffff;
+             --text-secondary: #b8c6db;
+             --text-muted: #74b9ff;
+             --glass-bg: rgba(255, 255, 255, 0.05);
+             --glass-border: rgba(255, 255, 255, 0.1);
+             --shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.3);
+             --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+         }
 
         * {
             margin: 0;
@@ -125,26 +126,19 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             position: relative;
         }
 
-        /* Animated background particles */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
-            animation: backgroundFloat 20s ease-in-out infinite;
-            z-index: -1;
-        }
-
-        @keyframes backgroundFloat {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(5deg); }
-        }
+         /* Subtle background gradient */
+         body::before {
+             content: '';
+             position: fixed;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background: 
+                 radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.03) 0%, transparent 70%),
+                 radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.03) 0%, transparent 70%);
+             z-index: -1;
+         }
 
         .presentation-container {
             min-height: 100vh;
@@ -164,42 +158,18 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             overflow: hidden;
         }
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
-            animation: headerShine 4s ease-in-out infinite;
-        }
-
-        @keyframes headerShine {
-            0% { left: -100%; }
-            50% { left: 100%; }
-            100% { left: 100%; }
-        }
-
-        .poll-title {
-            font-size: clamp(2rem, 5vw, 4rem);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary), var(--accent-secondary));
-            background-size: 200% 200%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1.2;
-            animation: gradientShift 6s ease-in-out infinite;
-            position: relative;
-            z-index: 1;
-        }
-
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
+         .poll-title {
+             font-size: clamp(2rem, 5vw, 4rem);
+             font-weight: 700;
+             margin-bottom: 1rem;
+             background: linear-gradient(135deg, #00d4ff, #4ecdc4);
+             -webkit-background-clip: text;
+             -webkit-text-fill-color: transparent;
+             background-clip: text;
+             line-height: 1.2;
+             position: relative;
+             z-index: 1;
+         }
 
         .poll-meta {
             font-size: 1.2rem;
@@ -271,34 +241,19 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             overflow: hidden;
         }
 
-        .option-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
-            transition: left 0.6s ease;
-        }
+         .option-item:hover {
+             transform: translateY(-2px);
+             box-shadow: var(--shadow-dark);
+         }
 
-        .option-item:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-dark), var(--shadow-glow);
-            border-color: var(--accent-primary);
-        }
-
-        .option-item:hover::before {
-            left: 100%;
-        }
-
-        .option-item:nth-child(1) { border-left: 3px solid var(--accent-primary); }
-        .option-item:nth-child(2) { border-left: 3px solid var(--accent-secondary); }
-        .option-item:nth-child(3) { border-left: 3px solid var(--accent-tertiary); }
-        .option-item:nth-child(4) { border-left: 3px solid var(--accent-quaternary); }
-        .option-item:nth-child(5) { border-left: 3px solid var(--accent-success); }
-        .option-item:nth-child(6) { border-left: 3px solid var(--accent-warning); }
-        .option-item:nth-child(7) { border-left: 3px solid var(--accent-purple); }
+         .option-item:nth-child(1) { border-left: 3px solid var(--color-1); }
+         .option-item:nth-child(2) { border-left: 3px solid var(--color-2); }
+         .option-item:nth-child(3) { border-left: 3px solid var(--color-3); }
+         .option-item:nth-child(4) { border-left: 3px solid var(--color-4); }
+         .option-item:nth-child(5) { border-left: 3px solid var(--color-5); }
+         .option-item:nth-child(6) { border-left: 3px solid var(--color-6); }
+         .option-item:nth-child(7) { border-left: 3px solid var(--color-7); }
+         .option-item:nth-child(8) { border-left: 3px solid var(--color-8); }
 
         .option-header {
             display: flex;
@@ -381,28 +336,31 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             overflow: hidden;
         }
 
-        /* Different colored progress bars for each option */
-        .option-item:nth-child(1) .progress-fill {
-            background: linear-gradient(135deg, var(--accent-primary), #0099cc);
-        }
-        .option-item:nth-child(2) .progress-fill {
-            background: linear-gradient(135deg, var(--accent-secondary), #ff5252);
-        }
-        .option-item:nth-child(3) .progress-fill {
-            background: linear-gradient(135deg, var(--accent-tertiary), #26a69a);
-        }
-        .option-item:nth-child(4) .progress-fill {
-            background: linear-gradient(135deg, var(--accent-quaternary), #2196f3);
-        }
-        .option-item:nth-child(5) .progress-fill {
-            background: linear-gradient(135deg, var(--accent-success), #66bb6a);
-        }
-        .option-item:nth-child(6) .progress-fill {
-            background: linear-gradient(135deg, var(--accent-warning), #ffb74d);
-        }
-        .option-item:nth-child(7) .progress-fill {
-            background: linear-gradient(135deg, var(--accent-purple), #7986cb);
-        }
+         /* Different colored progress bars for each option */
+         .option-item:nth-child(1) .progress-fill {
+             background: var(--color-1);
+         }
+         .option-item:nth-child(2) .progress-fill {
+             background: var(--color-2);
+         }
+         .option-item:nth-child(3) .progress-fill {
+             background: var(--color-3);
+         }
+         .option-item:nth-child(4) .progress-fill {
+             background: var(--color-4);
+         }
+         .option-item:nth-child(5) .progress-fill {
+             background: var(--color-5);
+         }
+         .option-item:nth-child(6) .progress-fill {
+             background: var(--color-6);
+         }
+         .option-item:nth-child(7) .progress-fill {
+             background: var(--color-7);
+         }
+         .option-item:nth-child(8) .progress-fill {
+             background: var(--color-8);
+         }
 
         .progress-fill::before {
             content: '';
@@ -418,25 +376,6 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             border-radius: 8px 8px 0 0;
         }
 
-        .progress-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, 
-                transparent 0%,
-                rgba(255, 255, 255, 0.4) 50%,
-                transparent 100%);
-            animation: shimmer 3s ease-in-out infinite;
-        }
-
-        @keyframes shimmer {
-            0% { left: -100%; }
-            50% { left: 100%; }
-            100% { left: 100%; }
-        }
 
         /* Chart Section */
         .chart-section {
@@ -671,17 +610,17 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         <!-- Header -->
         <div class="header">
             <h1 class="poll-title"><?php echo htmlspecialchars($currentPoll['question']); ?></h1>
-            <div class="poll-meta">
-                <?php echo $totalVotes; ?> Stimme<?php echo $totalVotes !== 1 ? 'n' : ''; ?> • 
-                <?php echo count($options); ?> Option<?php echo count($options) !== 1 ? 'en' : ''; ?>
-                <?php if (count($polls) > 1): ?>
-                    • Umfrage <?php echo $currentIndex + 1; ?> von <?php echo count($polls); ?>
-                <?php endif; ?>
-                <span class="live-indicator">
-                    <span class="live-dot"></span>
-                    LIVE
-                </span>
-            </div>
+             <div class="poll-meta">
+                 <span id="totalVotes"><?php echo $totalVotes; ?></span> Stimme<span id="votesPlural"><?php echo $totalVotes !== 1 ? 'n' : ''; ?></span> • 
+                 <?php echo count($options); ?> Option<?php echo count($options) !== 1 ? 'en' : ''; ?>
+                 <?php if (count($polls) > 1): ?>
+                     • Umfrage <?php echo $currentIndex + 1; ?> von <?php echo count($polls); ?>
+                 <?php endif; ?>
+                 <span class="live-indicator">
+                     <span class="live-dot"></span>
+                     LIVE
+                 </span>
+             </div>
         </div>
 
         <!-- Main Content -->
@@ -764,15 +703,16 @@ $totalVotes = array_sum(array_column($options, 'votes'));
                             <?php echo $option['votes']; ?>,
                         <?php endforeach; ?>
                     ],
-                    backgroundColor: [
-                        '#00d4ff',
-                        '#ff6b6b', 
-                        '#4ecdc4',
-                        '#45b7d1',
-                        '#96ceb4',
-                        '#ffeaa7',
-                        '#a29bfe'
-                    ],
+                     backgroundColor: [
+                         '#ff3b30',
+                         '#007aff',
+                         '#34c759',
+                         '#ff9500',
+                         '#af52de',
+                         '#ffcc02',
+                         '#ff2d92',
+                         '#00d4aa'
+                     ],
                     borderColor: 'rgba(255, 255, 255, 0.2)',
                     borderWidth: 2
                 }]
@@ -809,41 +749,47 @@ $totalVotes = array_sum(array_column($options, 'votes'));
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <script>
-        // Function to fetch results for the current poll and animate progress bars
-        function fetchResults() {
-            const pollId = <?php echo $currentPoll['id']; ?>;
-            $.get('results.php', { poll_id: pollId }, function(data) {
-                let totalVotes = data.reduce((sum, item) => sum + parseInt(item.votes, 10), 0);
-                if (totalVotes === 0) totalVotes = 1;
+         // Function to fetch results for the current poll and animate progress bars
+         function fetchResults() {
+             const pollId = <?php echo $currentPoll['id']; ?>;
+             $.get('results.php', { poll_id: pollId }, function(data) {
+                 let totalVotes = data.reduce((sum, item) => sum + parseInt(item.votes, 10), 0);
+                 
+                 // Update total votes display
+                 $('#totalVotes').text(totalVotes);
+                 $('#votesPlural').text(totalVotes !== 1 ? 'n' : '');
 
-                data.forEach(item => {
-                    const optionId = item.id;
-                    const text = item.option_text;
-                    const votes = parseInt(item.votes, 10);
-                    const newPerc = Math.round((votes / totalVotes) * 100);
+                 // Avoid division by zero
+                 const divisor = totalVotes > 0 ? totalVotes : 1;
 
-                    // Find elements for this option
-                    const $optionContainer = $(`[data-option="${optionId}"]`);
-                    if ($optionContainer.length > 0) {
-                        // Update vote count
-                        $optionContainer.find('.vote-count').text(votes);
-                        
-                        // Update percentage
-                        $optionContainer.find('.percentage').text(newPerc + '%');
-                        
-                        // Update progress bar
-                        const $progressBar = $optionContainer.find('.progress-fill');
-                        $progressBar.css('width', newPerc + '%');
-                    }
-                });
+                 data.forEach(item => {
+                     const optionId = item.id;
+                     const text = item.option_text;
+                     const votes = parseInt(item.votes, 10);
+                     const newPerc = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
 
-                // Update chart if it exists
-                if (window.presentationChart) {
-                    window.presentationChart.data.datasets[0].data = data.map(item => item.votes);
-                    window.presentationChart.update('active');
-                }
-            }, 'json');
-        }
+                     // Find elements for this option
+                     const $optionContainer = $(`[data-option="${optionId}"]`);
+                     if ($optionContainer.length > 0) {
+                         // Update vote count
+                         $optionContainer.find('.vote-count').text(votes);
+                         
+                         // Update percentage (round to 1 decimal place)
+                         $optionContainer.find('.percentage').text(newPerc.toFixed(1) + '%');
+                         
+                         // Update progress bar
+                         const $progressBar = $optionContainer.find('.progress-fill');
+                         $progressBar.css('width', newPerc.toFixed(1) + '%');
+                     }
+                 });
+
+                 // Update chart if it exists
+                 if (window.presentationChart) {
+                     window.presentationChart.data.datasets[0].data = data.map(item => item.votes);
+                     window.presentationChart.update('active');
+                 }
+             }, 'json');
+         }
 
         // Fullscreen functionality
         function toggleFullscreen() {
