@@ -162,18 +162,24 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              overflow: hidden;
          }
 
-         .header-content {
-             display: flex;
-             align-items: center;
-             justify-content: center;
-             gap: 1.5rem;
-             margin-bottom: 1rem;
+         .floating-logo {
+             position: fixed;
+             top: 2rem;
+             left: 2rem;
+             z-index: 999;
          }
 
          .spinning-logo {
              height: 60px;
              width: 60px;
              animation: spin 10s linear infinite;
+             filter: brightness(0) invert(1);
+             opacity: 0.8;
+             transition: opacity 0.3s ease;
+         }
+
+         .spinning-logo:hover {
+             opacity: 1;
          }
 
          @keyframes spin {
@@ -635,11 +641,12 @@ $totalVotes = array_sum(array_column($options, 'votes'));
          @media (max-width: 768px) {
              .header {
                  padding: 1.5rem 1rem;
+                 padding-top: 4rem; /* Make room for floating logo */
              }
 
-             .header-content {
-                 flex-direction: column;
-                 gap: 1rem;
+             .floating-logo {
+                 top: 1rem;
+                 left: 1rem;
              }
 
              .spinning-logo {
@@ -701,12 +708,14 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             </button>
         </div>
 
+        <!-- Floating Logo -->
+        <div class="floating-logo">
+            <img src="assets/logo.png" alt="Logo" class="spinning-logo">
+        </div>
+
         <!-- Header -->
         <div class="header">
-            <div class="header-content">
-                <img src="assets/logo.png" alt="Logo" class="spinning-logo">
-                <h1 class="poll-title"><?php echo htmlspecialchars($currentPoll['question']); ?></h1>
-            </div>
+            <h1 class="poll-title"><?php echo htmlspecialchars($currentPoll['question']); ?></h1>
              <div class="poll-meta">
                  <span id="totalVotes"><?php echo $totalVotes; ?></span> Stimme<span id="votesPlural"><?php echo $totalVotes !== 1 ? 'n' : ''; ?></span> • 
                  <?php echo count($options); ?> Option<?php echo count($options) !== 1 ? 'en' : ''; ?>
