@@ -219,12 +219,13 @@ $totalVotes = array_sum(array_column($options, 'votes'));
          .live-dot::after {
              content: '';
              position: absolute;
-             top: -4px;
-             left: -4px;
+             top: 50%;
+             left: 50%;
              width: 16px;
              height: 16px;
              border: 2px solid rgba(255, 255, 255, 0.3);
              border-radius: 50%;
+             transform: translate(-50%, -50%);
              animation: liveRipple 2s ease-out infinite;
          }
 
@@ -243,11 +244,11 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
          @keyframes liveRipple {
              0% {
-                 transform: scale(0.8);
+                 transform: translate(-50%, -50%) scale(0.8);
                  opacity: 1;
              }
              100% {
-                 transform: scale(2);
+                 transform: translate(-50%, -50%) scale(2);
                  opacity: 0;
              }
          }
@@ -678,14 +679,15 @@ $totalVotes = array_sum(array_column($options, 'votes'));
                     <div class="results-section">
                         <?php foreach ($options as $option): ?>
                             <?php 
-                            $percentage = $totalVotes > 0 ? round(($option['votes'] / $totalVotes) * 100, 1) : 0;
+                            $percentage = $totalVotes > 0 ? ($option['votes'] / $totalVotes) * 100 : 0;
+                            $formattedPercentage = ($percentage == floor($percentage)) ? number_format($percentage, 0) : number_format($percentage, 1);
                             ?>
                             <div class="option-item" data-option="<?php echo $option['id']; ?>">
                                 <div class="option-header">
                                     <div class="option-text"><?php echo htmlspecialchars($option['option_text']); ?></div>
                                     <div class="option-stats">
                                         <span class="vote-count"><?php echo $option['votes']; ?></span>
-                                        <span class="percentage"><?php echo $percentage; ?>%</span>
+                                        <span class="percentage"><?php echo $formattedPercentage; ?>%</span>
                                     </div>
                                 </div>
                                 <div class="progress-bar">
@@ -821,8 +823,9 @@ $totalVotes = array_sum(array_column($options, 'votes'));
                          // Update vote count
                          $optionContainer.find('.vote-count').text(votes);
                          
-                         // Update percentage (round to 1 decimal place)
-                         $optionContainer.find('.percentage').text(newPerc.toFixed(1) + '%');
+                         // Update percentage (remove .0 from whole numbers)
+                         const formattedPerc = newPerc % 1 === 0 ? newPerc.toFixed(0) : newPerc.toFixed(1);
+                         $optionContainer.find('.percentage').text(formattedPerc + '%');
                          
                          // Update progress bar
                          const $progressBar = $optionContainer.find('.progress-fill');
