@@ -310,10 +310,6 @@ function fetchResults() {
         
         // Update total votes display
         $('[data-total-votes]').text(totalVotes);
-        
-        // Update vote plural
-        const votePlural = totalVotes !== 1 ? 'n' : '';
-        $('.vote-plural').text(votePlural);
 
         data.forEach(item => {
             const optionId = item.id;
@@ -321,11 +317,12 @@ function fetchResults() {
             const newPerc = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
             const formattedPerc = newPerc % 1 === 0 ? newPerc.toFixed(0) : newPerc.toFixed(1);
 
-            // Update vote count
-            $(`[data-option-id="${optionId}"] [data-vote-count]`).text(votes);
+            // Update vote count with proper pluralization
+            const voteText = votes + ' Stimme' + (votes !== 1 ? 'n' : '');
+            $(`[data-option-id="${optionId}"] [data-vote-count]`).text(voteText);
             
             // Update percentage
-            $(`[data-option-id="${optionId}"] [data-percentage]`).text(formattedPerc + '%');
+            $(`[data-option-id="${optionId}"] [data-percentage]`).text('(' + formattedPerc + '%)');
             
             // Update progress bar
             const $progressBar = $(`[data-option-id="${optionId}"] .progress-bar`);
@@ -411,7 +408,10 @@ function formatDateTime(dateString) {
 }
 
 // Start live updates
-setInterval(fetchResults, 5000); // Update every 5 seconds
+$(document).ready(function() {
+    fetchResults(); // Initial load
+    setInterval(fetchResults, 5000); // Update every 5 seconds
+});
 
 // Add visual indicator for live updates
 document.addEventListener('DOMContentLoaded', function() {
@@ -437,6 +437,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.head.appendChild(style);
 });
 </script>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
