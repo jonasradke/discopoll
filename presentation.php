@@ -413,16 +413,25 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
         .results-grid {
             display: grid;
-            grid-template-columns: 1fr auto;
+            grid-template-columns: 1fr 400px;
             gap: 4rem;
             width: 100%;
-            max-width: 1400px;
-            align-items: center;
+            max-width: 1600px;
+            align-items: start;
+            margin: 0 auto;
         }
 
         /* Results Section */
         .results-section {
-            space-y: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-dark);
         }
 
         .option-item {
@@ -453,9 +462,10 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
         .option-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
         }
 
         .option-text {
@@ -477,37 +487,49 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         }
 
         .option-text {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 600;
             flex: 1;
             color: var(--text-primary);
+            line-height: 1.4;
+            margin-right: 1rem;
         }
 
         .option-stats {
-            text-align: right;
-            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+            min-width: 120px;
         }
 
         .vote-count {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 700;
-            display: block;
             color: #00d4ff;
+            line-height: 1;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
         }
 
         .percentage {
-            font-size: 1rem;
-            color: var(--text-muted);
-            font-weight: 500;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.3rem 0.8rem;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .progress-bar {
-            height: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
+            height: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
             overflow: hidden;
             position: relative;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .progress-fill {
@@ -570,6 +592,10 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             min-width: 400px;
             position: relative;
             overflow: hidden;
+            box-shadow: var(--shadow-dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .chart-section::before {
@@ -584,12 +610,14 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         }
 
         .chart-title {
-            font-size: 1.5rem;
-            font-weight: 600;
+            font-size: 1.6rem;
+            font-weight: 700;
             margin-bottom: 2rem;
             color: var(--text-primary);
             position: relative;
             z-index: 1;
+            text-align: center;
+            letter-spacing: 0.5px;
         }
 
         #presentationChart {
@@ -711,24 +739,35 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             text-align: center;
             padding: 4rem 2rem;
             color: var(--text-secondary);
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: var(--shadow-dark);
+            margin: 2rem 0;
         }
 
         .no-votes-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary));
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #00d4ff, #007aff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.3));
         }
 
         .no-votes h2 {
             color: var(--text-primary);
             margin-bottom: 1rem;
+            font-size: 2rem;
+            font-weight: 700;
         }
 
         .no-votes p {
             color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.6;
         }
 
         /* Responsive */
