@@ -277,26 +277,38 @@ function fetchResults(pollId) {
         const divisor = totalVotes > 0 ? totalVotes : 1;
 
         // Update total votes display
-        $('#total-votes').text(totalVotes === 1 && data.every(item => item.votes == 0) ? 0 : totalVotes);
+        $('#total-votes').text(totalVotes);
+        console.log('Updating poll data - Total votes:', totalVotes);
 
         data.forEach(item => {
             const optionId = item.id;
             const votes = parseInt(item.votes, 10);
             const newPerc = Math.round((votes / divisor) * 100);
 
-            // Update vote count
-            $(`[data-option-id="${optionId}"] .vote-count`).text(`${votes} Stimme${votes !== 1 ? 'n' : ''}`);
+            // Find the option container
+            const $optionContainer = $(`[data-option-id="${optionId}"]`);
             
-            // Update percentage
-            $(`[data-option-id="${optionId}"] .vote-percentage`).text(`(${newPerc}%)`);
-            
-            // Update progress bar with animation like homepage
-            const $bar = $(`[data-option-id="${optionId}"] .progress-bar`);
-            let oldPercent = parseInt($bar.attr('aria-valuenow'), 10) || 0;
-            $bar.css('width', oldPercent + '%');
-            setTimeout(() => {
-                $bar.attr('aria-valuenow', newPerc).css('width', newPerc + '%');
-            }, 50);
+            if ($optionContainer.length > 0) {
+                console.log(`Updating option ${optionId}: ${votes} votes, ${newPerc}%`);
+                
+                // Update vote count
+                $optionContainer.find('.vote-count').text(`${votes} Stimme${votes !== 1 ? 'n' : ''}`);
+                
+                // Update percentage
+                $optionContainer.find('.vote-percentage').text(`(${newPerc}%)`);
+                
+                // Update progress bar with animation
+                const $bar = $optionContainer.find('.progress-bar');
+                if ($bar.length > 0) {
+                    let oldPercent = parseInt($bar.attr('aria-valuenow'), 10) || 0;
+                    $bar.css('width', oldPercent + '%');
+                    setTimeout(() => {
+                        $bar.attr('aria-valuenow', newPerc).css('width', newPerc + '%');
+                    }, 50);
+                }
+            } else {
+                console.log(`Option container not found for option ${optionId}`);
+            }
         });
 
         // Update chart if it exists
