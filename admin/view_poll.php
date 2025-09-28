@@ -302,135 +302,78 @@ const pollId = <?php echo $pollId; ?>;
 pollChart = window.pollChart || Chart.getChart('pollChart');
 <?php endif; ?>
 
-// Function to update poll data
-async function updatePollData() {
-    try {
-        const response = await fetch(`poll_data.php?id=${pollId}`);
-        if (!response.ok) throw new Error('Failed to fetch data');
+// Function to fetch results and update display (same as homepage and presentation)
+function fetchResults() {
+    const pollId = <?php echo $pollId; ?>;
+    $.get('../results.php', { poll_id: pollId }, function(data) {
+        let totalVotes = data.reduce((sum, item) => sum + parseInt(item.votes, 10), 0);
         
-        const data = await response.json();
+        // Update total votes display
+        $('[data-total-votes]').text(totalVotes);
         
-        // Update total votes
-        updateTotalVotes(data.totalVotes);
+        // Update vote plural
+        const votePlural = totalVotes !== 1 ? 'n' : '';
+        $('.vote-plural').text(votePlural);
+
+        data.forEach(item => {
+            const optionId = item.id;
+            const votes = parseInt(item.votes, 10);
+            const newPerc = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
+            const formattedPerc = newPerc % 1 === 0 ? newPerc.toFixed(0) : newPerc.toFixed(1);
+
+            // Update vote count
+            $(`[data-option-id="${optionId}"] [data-vote-count]`).text(votes);
+            
+            // Update percentage
+            $(`[data-option-id="${optionId}"] [data-percentage]`).text(formattedPerc + '%');
+            
+            // Update progress bar
+            const $progressBar = $(`[data-option-id="${optionId}"] .progress-bar`);
+            $progressBar.css('width', formattedPerc + '%');
+        });
+
+        // Update chart if it exists
+        if (window.pollChart) {
+            window.pollChart.data.datasets[0].data = data.map(item => item.votes);
+            window.pollChart.update('active');
+        }
         
         // Update statistics
-        updateStatistics(data);
-        
-        // Update progress bars
-        updateProgressBars(data.options, data.totalVotes);
-        
-        // Update chart
-        updateChart(data.options, data.totalVotes);
-        
-        // Update recent activity
-        updateRecentActivity(data.recentVotes);
+        updateStatistics(data, totalVotes);
         
         // Update last updated indicator
         updateLastUpdated();
         
-    } catch (error) {
-        console.error('Error updating poll data:', error);
-    }
+    }, 'json');
 }
 
-// Update total votes display
-function updateTotalVotes(totalVotes) {
-    const elements = document.querySelectorAll('[data-total-votes]');
-    elements.forEach(el => {
-        el.textContent = totalVotes;
-    });
-}
 
 // Update statistics card
-function updateStatistics(data) {
+function updateStatistics(options, totalVotes) {
     const statsCard = document.querySelector('[data-stats-card]');
     if (!statsCard) return;
     
-    if (data.totalVotes > 0 && data.topOption) {
-        const percentage = Math.round((data.topOption.votes / data.totalVotes) * 100 * 10) / 10;
+    if (totalVotes > 0 && options.length > 0) {
+        // Find the option with most votes
+        const topOption = options.reduce((max, option) => 
+            parseInt(option.votes) > parseInt(max.votes) ? option : max
+        );
+        
+        const percentage = ((parseInt(topOption.votes) / totalVotes) * 100);
+        const formattedPerc = percentage % 1 === 0 ? percentage.toFixed(0) : percentage.toFixed(1);
+        
         statsCard.innerHTML = `
             <p><strong>Beliebteste Option:</strong><br>
-            <span class="text-primary">${escapeHtml(data.topOption.option_text)}</span><br>
-            <small class="text-muted">${data.topOption.votes} Stimmen (${percentage}%)</small></p>
-            
-            ${data.recentVotes.length > 0 ? `
-                <p><strong>Letzte Stimme:</strong><br>
-                <small class="text-muted">${formatDateTime(data.recentVotes[0].voted_at)}</small></p>
-            ` : ''}
+            <span class="text-primary">${escapeHtml(topOption.option_text)}</span><br>
+            <small class="text-muted">${topOption.votes} Stimmen (${formattedPerc}%)</small></p>
         `;
     } else {
         statsCard.innerHTML = '<p class="text-muted">Noch keine Stimmen abgegeben.</p>';
     }
 }
 
-// Update progress bars
-function updateProgressBars(options, totalVotes) {
-    options.forEach(option => {
-        const percentage = totalVotes > 0 ? Math.round((option.votes / totalVotes) * 100 * 10) / 10 : 0;
-        
-        // Find progress bar elements
-        const progressBar = document.querySelector(`[data-option-id="${option.id}"] .progress-bar`);
-        const voteCount = document.querySelector(`[data-option-id="${option.id}"] [data-vote-count]`);
-        const percentageSpan = document.querySelector(`[data-option-id="${option.id}"] [data-percentage]`);
-        
-        if (progressBar) {
-            // Animate progress bar
-            progressBar.style.width = percentage + '%';
-            progressBar.setAttribute('aria-valuenow', percentage);
-            progressBar.textContent = percentage + '%';
-        }
-        
-        if (voteCount) {
-            voteCount.textContent = option.votes + ' Stimme' + (option.votes !== 1 ? 'n' : '');
-        }
-        
-        if (percentageSpan) {
-            percentageSpan.textContent = '(' + percentage + '%)';
-        }
-    });
-}
 
-// Update chart
-function updateChart(options, totalVotes) {
-    if (!pollChart || totalVotes === 0) {
-        // If no chart exists and we now have votes, reload the page to create it
-        if (!pollChart && totalVotes > 0) {
-            location.reload();
-            return;
-        }
-        return;
-    }
-    
-    // Update chart data
-    pollChart.data.datasets[0].data = options.map(option => option.votes);
-    pollChart.update('active');
-}
 
-// Update recent activity table
-function updateRecentActivity(recentVotes) {
-    const activitySection = document.querySelector('[data-recent-activity]');
-    const activityTableBody = document.querySelector('[data-recent-activity] tbody');
-    
-    if (recentVotes.length === 0) {
-        if (activitySection) {
-            activitySection.style.display = 'none';
-        }
-        return;
-    }
-    
-    if (activitySection) {
-        activitySection.style.display = 'block';
-    }
-    
-    if (activityTableBody) {
-        activityTableBody.innerHTML = recentVotes.map(vote => `
-            <tr>
-                <td>${formatDateTime(vote.voted_at)}</td>
-                <td>${escapeHtml(vote.option_text)}</td>
-            </tr>
-        `).join('');
-    }
-}
 
 // Update last updated indicator
 function updateLastUpdated() {
@@ -468,7 +411,7 @@ function formatDateTime(dateString) {
 }
 
 // Start live updates
-setInterval(updatePollData, 5000); // Update every 5 seconds
+setInterval(fetchResults, 5000); // Update every 5 seconds
 
 // Add visual indicator for live updates
 document.addEventListener('DOMContentLoaded', function() {
