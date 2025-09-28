@@ -40,211 +40,141 @@ $options = $stmtOptions->fetchAll(PDO::FETCH_ASSOC);
 
 // Calculate total votes
 $totalVotes = array_sum(array_column($options, 'votes'));
-
-// Get recent votes for activity log
-$stmtRecentVotes = $pdo->prepare("
-    SELECT pv.voted_at, po.option_text
-    FROM poll_votes pv
-    JOIN poll_options po ON pv.option_id = po.id
-    WHERE pv.poll_id = :poll_id
-    ORDER BY pv.voted_at DESC
-    LIMIT 10
-");
-$stmtRecentVotes->execute([':poll_id' => $pollId]);
-$recentVotes = $stmtRecentVotes->fetchAll(PDO::FETCH_ASSOC);
 ?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Umfrage Anzeigen - <?php echo htmlspecialchars($poll['question']); ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Umfrage anzeigen - <?php echo htmlspecialchars($poll['question']); ?></title>
+    
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="../assets/style.css" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Chart.js for better visualization -->
+    
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body class="bg-light">
-<div class="container py-5">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
-                <h2 class="mb-0">Umfrage Anzeigen</h2>
-                <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
-                    <a href="../presentation?id=<?php echo $pollId; ?>" 
-                       class="btn btn-dark" 
-                       target="_blank"
-                       title="Präsentationsmodus öffnen">
-                       📊 Präsentation
-                    </a>
-                    <a href="edit_poll?id=<?php echo $pollId; ?>" class="btn btn-primary">
-                        ✏️ Bearbeiten
-                    </a>
-                    <a href="dashboard" class="btn btn-secondary">
-                        ← Zurück zum Dashboard
-                    </a>
-                </div>
-            </div>
+
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Umfrage anzeigen</h2>
+        <div>
+            <a href="dashboard" class="btn btn-secondary">← Zurück</a>
+            <a href="../presentation?id=<?php echo $pollId; ?>" class="btn btn-dark" target="_blank">📊 Präsentation</a>
         </div>
     </div>
 
-    <div class="row">
-        <!-- Poll Details Card -->
-        <div class="col-lg-8 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Umfrage Details</h5>
-                    <?php if ($poll['archived']): ?>
-                        <span class="badge bg-secondary fs-6">Archiviert</span>
-                    <?php else: ?>
-                        <span class="badge bg-success fs-6">Aktiv</span>
-                    <?php endif; ?>
-                </div>
+    <!-- Poll Information -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
                 <div class="card-body">
-                    <h4 class="card-title mb-3"><?php echo htmlspecialchars($poll['question']); ?></h4>
-                    <div class="row">
+                    <h4 class="card-title"><?php echo htmlspecialchars($poll['question']); ?></h4>
+                    <div class="row mt-3">
                         <div class="col-md-6">
-                            <p><strong>ID:</strong> <?php echo $poll['id']; ?></p>
+                            <p><strong>Poll ID:</strong> <?php echo $poll['id']; ?></p>
                             <p><strong>Erstellt am:</strong> <?php echo date('d.m.Y H:i', strtotime($poll['created_at'])); ?></p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Gesamtstimmen:</strong> <span data-total-votes><?php echo $totalVotes; ?></span></p>
+                            <p><strong>Gesamtstimmen:</strong> <span id="total-votes"><?php echo $totalVotes; ?></span></p>
                             <p><strong>Anzahl Optionen:</strong> <?php echo count($options); ?></p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Quick Stats Card -->
-        <div class="col-lg-4 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0">Statistiken</h5>
-                </div>
-                <div class="card-body" data-stats-card>
-                    <?php if ($totalVotes > 0): ?>
-                        <?php
-                        $topOption = array_reduce($options, function($max, $option) {
-                            return ($option['votes'] > $max['votes']) ? $option : $max;
-                        }, ['votes' => 0]);
-                        ?>
-                        <p><strong>Beliebteste Option:</strong><br>
-                        <span class="text-primary"><?php echo htmlspecialchars($topOption['option_text']); ?></span><br>
-                        <small class="text-muted"><?php echo $topOption['votes']; ?> Stimmen (<?php echo round(($topOption['votes'] / $totalVotes) * 100, 1); ?>%)</small></p>
-                        
-                        <?php if (count($recentVotes) > 0): ?>
-                            <p><strong>Letzte Stimme:</strong><br>
-                            <small class="text-muted"><?php echo date('d.m.Y H:i', strtotime($recentVotes[0]['voted_at'])); ?></small></p>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Statistiken</h5>
+                    <div id="stats-content">
+                        <?php if ($totalVotes > 0): ?>
+                            <?php
+                            $topOption = null;
+                            $maxVotes = 0;
+                            foreach ($options as $option) {
+                                if ($option['votes'] > $maxVotes) {
+                                    $maxVotes = $option['votes'];
+                                    $topOption = $option;
+                                }
+                            }
+                            $percentage = round(($topOption['votes'] / $totalVotes) * 100);
+                            ?>
+                            <p><strong>Beliebteste Option:</strong><br>
+                            <span class="text-primary"><?php echo htmlspecialchars($topOption['option_text']); ?></span><br>
+                            <small class="text-muted"><?php echo $topOption['votes']; ?> Stimmen (<?php echo $percentage; ?>%)</small></p>
+                        <?php else: ?>
+                            <p class="text-muted">Noch keine Stimmen abgegeben.</p>
                         <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ergebnisse</h5>
+                    
+                    <?php if ($totalVotes > 0): ?>
+                        <?php foreach ($options as $option): ?>
+                            <?php 
+                            $percentage = round(($option['votes'] / $totalVotes) * 100);
+                            ?>
+                            <div class="mb-3" data-option-id="<?php echo $option['id']; ?>">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span><?php echo htmlspecialchars($option['option_text']); ?></span>
+                                    <span class="text-muted">
+                                        <span class="vote-count"><?php echo $option['votes']; ?> Stimme<?php echo $option['votes'] !== 1 ? 'n' : ''; ?></span> 
+                                        <span class="vote-percentage">(<?php echo $percentage; ?>%)</span>
+                                    </span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar" 
+                                         role="progressbar" 
+                                         style="width: <?php echo $percentage; ?>%;" 
+                                         aria-valuenow="<?php echo $percentage; ?>" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
                     <?php else: ?>
                         <p class="text-muted">Noch keine Stimmen abgegeben.</p>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Results Visualization -->
-    <div class="row">
-        <div class="col-lg-8 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0">Ergebnisse</h5>
-                </div>
+        
+        <div class="col-md-4">
+            <?php if ($totalVotes > 0): ?>
+            <div class="card">
                 <div class="card-body">
-                    <?php if ($totalVotes > 0): ?>
-                        <!-- Progress bars -->
-                        <?php foreach ($options as $option): ?>
-                            <?php 
-                            $percentage = $totalVotes > 0 ? round(($option['votes'] / $totalVotes) * 100, 1) : 0;
-                            ?>
-                            <div class="mb-3" data-option-id="<?php echo $option['id']; ?>">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="fw-medium"><?php echo htmlspecialchars($option['option_text']); ?></span>
-                                    <span class="text-muted">
-                                        <span data-vote-count><?php echo $option['votes']; ?> Stimme<?php echo $option['votes'] !== 1 ? 'n' : ''; ?></span> 
-                                        <span data-percentage>(<?php echo $percentage; ?>%)</span>
-                                    </span>
-                                </div>
-                                <div class="progress" style="height: 25px;">
-                                    <div class="progress-bar bg-primary" 
-                                         role="progressbar" 
-                                         style="width: <?php echo $percentage; ?>%;" 
-                                         aria-valuenow="<?php echo $percentage; ?>" 
-                                         aria-valuemin="0" 
-                                         aria-valuemax="100">
-                                        <?php echo $percentage; ?>%
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <div class="text-center py-4">
-                            <i class="text-muted">Noch keine Stimmen abgegeben.</i>
-                        </div>
-                    <?php endif; ?>
+                    <h5 class="card-title">Verteilung</h5>
+                    <canvas id="pollChart" width="300" height="300"></canvas>
                 </div>
             </div>
-        </div>
-
-        <!-- Chart Visualization -->
-        <div class="col-lg-4 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0">Diagramm</h5>
-                </div>
-                <div class="card-body">
-                    <?php if ($totalVotes > 0): ?>
-                        <canvas id="pollChart" width="300" height="300"></canvas>
-                    <?php else: ?>
-                        <div class="text-center py-4">
-                            <i class="text-muted">Keine Daten für Diagramm verfügbar.</i>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="row" data-recent-activity style="<?php echo count($recentVotes) === 0 ? 'display: none;' : ''; ?>">
-        <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <h5 class="mb-0">Letzte Aktivität</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Zeitpunkt</th>
-                                    <th>Gewählte Option</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($recentVotes as $vote): ?>
-                                <tr>
-                                    <td><?php echo date('d.m.Y H:i:s', strtotime($vote['voted_at'])); ?></td>
-                                    <td><?php echo htmlspecialchars($vote['option_text']); ?></td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
 
+<!-- Chart.js Script -->
 <?php if ($totalVotes > 0): ?>
 <script>
-// Chart.js pie chart
 const ctx = document.getElementById('pollChart').getContext('2d');
-const pollChart = new Chart(ctx, {
+window.pollChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
         labels: [
@@ -259,11 +189,17 @@ const pollChart = new Chart(ctx, {
                 <?php endforeach; ?>
             ],
             backgroundColor: [
-                '#0d6efd', '#6c757d', '#28a745', '#ffc107', '#dc3545', 
-                '#17a2b8', '#6f42c1', '#e83e8c', '#fd7e14', '#20c997'
+                '#ff3b30',
+                '#007aff',
+                '#34c759',
+                '#ff9500',
+                '#af52de',
+                '#ffcc02',
+                '#ff2d92',
+                '#00d4aa'
             ],
-            borderWidth: 2,
-            borderColor: '#fff'
+            borderColor: '#fff',
+            borderWidth: 2
         }]
     },
     options: {
@@ -271,20 +207,7 @@ const pollChart = new Chart(ctx, {
         maintainAspectRatio: true,
         plugins: {
             legend: {
-                position: 'bottom',
-                labels: {
-                    padding: 15,
-                    usePointStyle: true
-                }
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                        const percentage = ((context.parsed / total) * 100).toFixed(1);
-                        return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
-                    }
-                }
+                position: 'bottom'
             }
         }
     }
@@ -292,58 +215,55 @@ const pollChart = new Chart(ctx, {
 </script>
 <?php endif; ?>
 
+<!-- Live Updates Script -->
 <script>
-// Function to fetch results for a specific poll and animate progress bars (EXACT COPY FROM HOMEPAGE)
+// Function to fetch results and update display (EXACT COPY FROM HOMEPAGE)
 function fetchResults(pollId) {
-  $.get('../results.php', { poll_id: pollId }, function(data) {
-    let totalVotes = data.reduce((sum, item) => sum + parseInt(item.votes, 10), 0);
-    if (totalVotes === 0) totalVotes = 1;
+    $.get('../results.php', { poll_id: pollId }, function(data) {
+        let totalVotes = data.reduce((sum, item) => sum + parseInt(item.votes, 10), 0);
+        if (totalVotes === 0) totalVotes = 1;
 
-    // Update total votes display
-    $('[data-total-votes]').text(totalVotes === 1 && data.every(item => item.votes == 0) ? 0 : totalVotes);
+        // Update total votes display
+        $('#total-votes').text(totalVotes === 1 && data.every(item => item.votes == 0) ? 0 : totalVotes);
 
-    data.forEach(item => {
-      const optionId  = item.id;
-      const text      = item.option_text;
-      const votes     = parseInt(item.votes, 10);
-      const newPerc   = Math.round((votes / totalVotes) * 100);
+        data.forEach(item => {
+            const optionId = item.id;
+            const votes = parseInt(item.votes, 10);
+            const newPerc = Math.round((votes / totalVotes) * 100);
 
-      // Update vote count
-      $(`[data-option-id="${optionId}"] [data-vote-count]`).text(`${votes} Stimme${votes !== 1 ? 'n' : ''}`);
-      
-      // Update percentage
-      $(`[data-option-id="${optionId}"] [data-percentage]`).text(`(${newPerc}%)`);
-      
-      // Update progress bar with animation like homepage
-      const $bar = $(`[data-option-id="${optionId}"] .progress-bar`);
-      let oldPercent = parseInt($bar.attr('aria-valuenow'), 10) || 0;
-      $bar.css('width', oldPercent + '%');
-      setTimeout(() => {
-        $bar.attr('aria-valuenow', newPerc).css('width', newPerc + '%');
-      }, 50);
+            // Update vote count
+            $(`[data-option-id="${optionId}"] .vote-count`).text(`${votes} Stimme${votes !== 1 ? 'n' : ''}`);
+            
+            // Update percentage
+            $(`[data-option-id="${optionId}"] .vote-percentage`).text(`(${newPerc}%)`);
+            
+            // Update progress bar with animation like homepage
+            const $bar = $(`[data-option-id="${optionId}"] .progress-bar`);
+            let oldPercent = parseInt($bar.attr('aria-valuenow'), 10) || 0;
+            $bar.css('width', oldPercent + '%');
+            setTimeout(() => {
+                $bar.attr('aria-valuenow', newPerc).css('width', newPerc + '%');
+            }, 50);
+        });
+
+        // Update chart if it exists
+        if (window.pollChart) {
+            window.pollChart.data.datasets[0].data = data.map(item => item.votes);
+            window.pollChart.update('active');
+        }
+
+        // Update statistics
+        updateStatistics(data);
+        
+    }, 'json').fail(function(xhr, status, error) {
+        console.error('Failed to fetch poll results:', error);
     });
-
-    // Update chart if it exists
-    if (window.pollChart) {
-        window.pollChart.data.datasets[0].data = data.map(item => item.votes);
-        window.pollChart.update('active');
-    }
-
-    // Update statistics
-    updateStatistics(data, totalVotes);
-    
-    // Update last updated indicator
-    updateLastUpdated();
-    
-  }, 'json');
 }
 
-// Update statistics card
-function updateStatistics(data, totalVotes) {
-    const statsCard = document.querySelector('[data-stats-card]');
-    if (!statsCard) return;
-    
+// Update statistics section
+function updateStatistics(data) {
     const realTotalVotes = data.reduce((sum, item) => sum + parseInt(item.votes, 10), 0);
+    const statsContent = document.getElementById('stats-content');
     
     if (realTotalVotes > 0 && data.length > 0) {
         // Find the option with most votes
@@ -353,37 +273,14 @@ function updateStatistics(data, totalVotes) {
         
         const percentage = Math.round((parseInt(topOption.votes) / realTotalVotes) * 100);
         
-        statsCard.innerHTML = `
+        statsContent.innerHTML = `
             <p><strong>Beliebteste Option:</strong><br>
             <span class="text-primary">${escapeHtml(topOption.option_text)}</span><br>
             <small class="text-muted">${topOption.votes} Stimmen (${percentage}%)</small></p>
         `;
     } else {
-        statsCard.innerHTML = '<p class="text-muted">Noch keine Stimmen abgegeben.</p>';
+        statsContent.innerHTML = '<p class="text-muted">Noch keine Stimmen abgegeben.</p>';
     }
-}
-
-// Update last updated indicator
-function updateLastUpdated() {
-    let indicator = document.querySelector('[data-last-updated]');
-    if (!indicator) {
-        // Create indicator if it doesn't exist
-        indicator = document.createElement('small');
-        indicator.className = 'text-muted';
-        indicator.setAttribute('data-last-updated', '');
-        
-        const header = document.querySelector('h2');
-        if (header) {
-            const container = document.createElement('div');
-            container.className = 'd-flex justify-content-between align-items-center mb-3';
-            header.parentNode.insertBefore(container, header);
-            container.appendChild(header);
-            container.appendChild(indicator);
-        }
-    }
-    
-    const now = new Date();
-    indicator.textContent = `Zuletzt aktualisiert: ${now.toLocaleTimeString('de-DE')}`;
 }
 
 // Helper function to escape HTML
@@ -393,49 +290,21 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Initialize chart reference
-<?php if ($totalVotes > 0): ?>
-window.pollChart = window.pollChart || Chart.getChart('pollChart');
-<?php endif; ?>
-
 // Start live updates (EXACT COPY FROM HOMEPAGE)
 $(document).ready(function() {
     const pollId = <?php echo $pollId; ?>;
+    
+    // Add live indicator
+    $('h2').append(' <span class="badge bg-success">🔴 Live</span>');
+    
+    // Start updates
     fetchResults(pollId);
     setInterval(() => fetchResults(pollId), 5000);
 });
-
-// Add visual indicator for live updates
-document.addEventListener('DOMContentLoaded', function() {
-    // Add live indicator
-    const header = document.querySelector('h2');
-    if (header) {
-        const liveIndicator = document.createElement('span');
-        liveIndicator.className = 'badge bg-success ms-2';
-        liveIndicator.innerHTML = '🔴 Live';
-        liveIndicator.style.animation = 'pulse 2s infinite';
-        header.appendChild(liveIndicator);
-    }
-    
-    // Add CSS for pulse animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-    `;
-    document.head.appendChild(style);
-});
 </script>
-
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<?php include '../partials/footer.php'; ?>
 
 </body>
 </html>
