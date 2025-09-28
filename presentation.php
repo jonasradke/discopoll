@@ -90,6 +90,17 @@ $totalVotes = array_sum(array_column($options, 'votes'));
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow-light: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --shadow-heavy: 0 20px 60px rgba(0, 0, 0, 0.3);
+            --transition-smooth: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-bounce: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -98,10 +109,32 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--primary-gradient);
             min-height: 100vh;
             color: #fff;
             overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background particles */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            animation: backgroundShift 20s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(5deg); }
         }
 
         .presentation-container {
@@ -113,28 +146,107 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
         /* Header */
         .header {
-            padding: 2rem;
+            padding: 3rem 2rem;
             text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border-bottom: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: headerShine 3s ease-in-out infinite;
+        }
+
+        @keyframes headerShine {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
         }
 
         .poll-title {
-            font-size: clamp(2rem, 5vw, 4rem);
-            font-weight: 700;
-            margin-bottom: 1rem;
-            background: linear-gradient(45deg, #fff, #f0f0f0);
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: var(--secondary-gradient);
+            background-size: 400% 400%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            line-height: 1.2;
+            line-height: 1.1;
+            animation: gradientShift 8s ease-in-out infinite, titlePulse 4s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
         }
 
         .poll-meta {
-            font-size: 1.2rem;
-            opacity: 0.8;
-            font-weight: 300;
+            font-size: 1.4rem;
+            opacity: 0.9;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: var(--transition-smooth);
+            animation: metaFloat 6s ease-in-out infinite;
+        }
+
+        .meta-item:nth-child(2) { animation-delay: -2s; }
+        .meta-item:nth-child(3) { animation-delay: -4s; }
+
+        @keyframes metaFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 59, 48, 0.2);
+            border: 1px solid rgba(255, 59, 48, 0.4);
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #ff3b30;
+            border-radius: 50%;
+            animation: livePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
         }
 
         /* Main Content */
@@ -161,20 +273,65 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         }
 
         .option-item {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
-            padding: 2rem;
-            margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            transition: var(--transition-smooth);
             position: relative;
             overflow: hidden;
+            transform-style: preserve-3d;
+            animation: optionSlideIn 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+
+        .option-item:nth-child(1) { animation-delay: 0.1s; }
+        .option-item:nth-child(2) { animation-delay: 0.2s; }
+        .option-item:nth-child(3) { animation-delay: 0.3s; }
+        .option-item:nth-child(4) { animation-delay: 0.4s; }
+        .option-item:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes optionSlideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .option-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: var(--transition-smooth);
         }
 
         .option-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            transform: translateY(-8px) rotateX(5deg);
+            box-shadow: var(--shadow-heavy);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .option-item:hover::before {
+            left: 100%;
+            transition: left 0.6s ease;
+        }
+
+        .option-item.winner {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.2));
+            border-color: rgba(255, 215, 0, 0.5);
+            animation: winnerGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes winnerGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.6); }
         }
 
         .option-header {
@@ -207,35 +364,90 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         }
 
         .progress-bar {
-            height: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
             overflow: hidden;
             position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0.8));
-            border-radius: 4px;
-            transition: width 1s ease-out;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.9) 0%,
+                rgba(255, 255, 255, 0.7) 50%,
+                rgba(255, 255, 255, 0.9) 100%);
+            border-radius: 8px;
+            transition: width 2s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.3) 0%,
+                rgba(255, 255, 255, 0.1) 50%,
+                rgba(255, 255, 255, 0.3) 100%);
+            border-radius: 8px 8px 0 0;
         }
 
         .progress-fill::after {
             content: '';
             position: absolute;
             top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            animation: shimmer 2s infinite;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent 0%,
+                rgba(255, 255, 255, 0.4) 50%,
+                transparent 100%);
+            animation: progressShimmer 3s ease-in-out infinite;
         }
 
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+        @keyframes progressShimmer {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+        .option-text {
+            font-size: 1.8rem;
+            font-weight: 700;
+            flex: 1;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .option-stats {
+            text-align: right;
+            opacity: 0.95;
+            margin-bottom: 1rem;
+        }
+
+        .vote-count {
+            font-size: 2.5rem;
+            font-weight: 800;
+            display: block;
+            background: var(--secondary-gradient);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 4s ease-in-out infinite;
+        }
+
+        .percentage {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            font-weight: 500;
         }
 
         /* Chart Section */
@@ -270,33 +482,63 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             display: flex;
             gap: 1rem;
             z-index: 1000;
+            animation: navSlideUp 1s ease-out 0.5s both;
+        }
+
+        @keyframes navSlideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
 
         .nav-btn {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
             border-radius: 50px;
             padding: 1rem 2rem;
             color: white;
             text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            font-weight: 600;
+            transition: var(--transition-bounce);
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: var(--transition-smooth);
         }
 
         .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-5px) scale(1.05);
             color: white;
             text-decoration: none;
+            box-shadow: var(--shadow-heavy);
         }
 
-        .nav-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
+        .nav-btn:hover::before {
+            left: 100%;
+        }
+
+        .nav-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
         }
 
         /* Controls */
@@ -305,25 +547,110 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             top: 2rem;
             right: 2rem;
             display: flex;
+            flex-direction: column;
             gap: 1rem;
             z-index: 1000;
+            animation: controlsSlideIn 1s ease-out 0.3s both;
+        }
+
+        @keyframes controlsSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .control-btn {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            padding: 0.75rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1rem;
             color: white;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1.2rem;
+            transition: var(--transition-bounce);
+            font-size: 1.4rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: var(--transition-smooth);
         }
 
         .control-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: var(--shadow-light);
+        }
+
+        .control-btn:hover::before {
+            transform: translateX(100%);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Settings Panel */
+        .settings-panel {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: var(--transition-smooth);
+            min-width: 250px;
+        }
+
+        .settings-panel.open {
+            transform: translateX(0);
+        }
+
+        .settings-toggle {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1rem;
+            color: white;
+            cursor: pointer;
+            transition: var(--transition-bounce);
+            font-size: 1.4rem;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            animation: controlsSlideIn 1s ease-out 0.1s both;
+        }
+
+        .settings-toggle:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.1) rotate(-5deg);
         }
 
         /* No votes state */
@@ -396,14 +723,55 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             </button>
         </div>
 
+        <!-- Settings Toggle -->
+        <div class="settings-toggle" onclick="toggleSettings()" title="Einstellungen">
+            ⚙️
+        </div>
+
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <h3 style="margin-bottom: 1rem; font-size: 1.2rem;">Präsentationseinstellungen</h3>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">Auto-Update Intervall:</label>
+                <select id="updateInterval" style="width: 100%; padding: 0.5rem; border-radius: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white;">
+                    <option value="5000">5 Sekunden</option>
+                    <option value="10000">10 Sekunden</option>
+                    <option value="30000">30 Sekunden</option>
+                    <option value="0">Aus</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                    <input type="checkbox" id="soundEffects" style="margin: 0;">
+                    Sound-Effekte
+                </label>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                    <input type="checkbox" id="showWinner" checked style="margin: 0;">
+                    Gewinner hervorheben
+                </label>
+            </div>
+        </div>
+
         <!-- Header -->
         <div class="header">
             <h1 class="poll-title"><?php echo htmlspecialchars($currentPoll['question']); ?></h1>
             <div class="poll-meta">
-                <?php echo $totalVotes; ?> Stimme<?php echo $totalVotes !== 1 ? 'n' : ''; ?> • 
-                <?php echo count($options); ?> Option<?php echo count($options) !== 1 ? 'en' : ''; ?>
+                <span class="meta-item live-indicator">
+                    <span class="live-dot"></span>
+                    LIVE
+                </span>
+                <span class="meta-item">
+                    <span id="totalVotesDisplay"><?php echo $totalVotes; ?></span> Stimme<?php echo $totalVotes !== 1 ? 'n' : ''; ?>
+                </span>
+                <span class="meta-item">
+                    <?php echo count($options); ?> Option<?php echo count($options) !== 1 ? 'en' : ''; ?>
+                </span>
                 <?php if (count($polls) > 1): ?>
-                    • Umfrage <?php echo $currentIndex + 1; ?> von <?php echo count($polls); ?>
+                <span class="meta-item">
+                    Umfrage <?php echo $currentIndex + 1; ?> von <?php echo count($polls); ?>
+                </span>
                 <?php endif; ?>
             </div>
         </div>
@@ -418,7 +786,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
                             <?php 
                             $percentage = $totalVotes > 0 ? round(($option['votes'] / $totalVotes) * 100, 1) : 0;
                             ?>
-                            <div class="option-item">
+                            <div class="option-item" data-option="<?php echo $option['id']; ?>">
                                 <div class="option-header">
                                     <div class="option-text"><?php echo htmlspecialchars($option['option_text']); ?></div>
                                     <div class="option-stats">
@@ -534,10 +902,194 @@ $totalVotes = array_sum(array_column($options, 'votes'));
     <?php endif; ?>
 
     <script>
+        // Enhanced presentation functionality
+        let updateInterval = null;
+        let soundEnabled = false;
+        let showWinner = true;
+        let currentData = null;
+
+        // Settings functionality
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('open');
+        }
+
+        // Initialize settings
+        function initializeSettings() {
+            const intervalSelect = document.getElementById('updateInterval');
+            const soundCheckbox = document.getElementById('soundEffects');
+            const winnerCheckbox = document.getElementById('showWinner');
+
+            intervalSelect.addEventListener('change', function() {
+                const interval = parseInt(this.value);
+                if (updateInterval) clearInterval(updateInterval);
+                
+                if (interval > 0) {
+                    updateInterval = setInterval(fetchAndUpdateData, interval);
+                }
+            });
+
+            soundCheckbox.addEventListener('change', function() {
+                soundEnabled = this.checked;
+            });
+
+            winnerCheckbox.addEventListener('change', function() {
+                showWinner = this.checked;
+                updateWinnerHighlight();
+            });
+
+            // Start with 10 second interval
+            intervalSelect.value = '10000';
+            updateInterval = setInterval(fetchAndUpdateData, 10000);
+        }
+
+        // Enhanced data fetching with animations
+        async function fetchAndUpdateData() {
+            try {
+                const pollId = <?php echo $currentPoll['id']; ?>;
+                const response = await fetch(`results.php?poll_id=${pollId}`);
+                const newData = await response.json();
+                
+                if (currentData && JSON.stringify(currentData) !== JSON.stringify(newData)) {
+                    // Data changed, play sound if enabled
+                    if (soundEnabled) playNotificationSound();
+                    
+                    // Animate changes
+                    animateDataUpdate(newData);
+                }
+                
+                currentData = newData;
+                updateDisplay(newData);
+                
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // Update display with new data
+        function updateDisplay(data) {
+            const totalVotes = data.reduce((sum, item) => sum + parseInt(item.votes), 0);
+            
+            // Update total votes with animation
+            const totalDisplay = document.getElementById('totalVotesDisplay');
+            if (totalDisplay) {
+                animateNumber(totalDisplay, parseInt(totalDisplay.textContent) || 0, totalVotes);
+            }
+
+            // Update progress bars and vote counts
+            data.forEach(item => {
+                const percentage = totalVotes > 0 ? Math.round((item.votes / totalVotes) * 100) : 0;
+                
+                // Find elements
+                const progressBar = document.querySelector(`[data-option="${item.id}"] .progress-fill`);
+                const voteCount = document.querySelector(`[data-option="${item.id}"] .vote-count`);
+                const percentageSpan = document.querySelector(`[data-option="${item.id}"] .percentage`);
+                
+                if (progressBar) {
+                    progressBar.style.width = percentage + '%';
+                }
+                
+                if (voteCount) {
+                    animateNumber(voteCount, parseInt(voteCount.textContent) || 0, item.votes);
+                }
+                
+                if (percentageSpan) {
+                    percentageSpan.textContent = percentage + '%';
+                }
+            });
+
+            // Update winner highlight
+            if (showWinner) {
+                updateWinnerHighlight();
+            }
+
+            // Update chart if it exists
+            if (window.chart) {
+                window.chart.data.datasets[0].data = data.map(item => item.votes);
+                window.chart.update('active');
+            }
+        }
+
+        // Animate number changes
+        function animateNumber(element, from, to) {
+            const duration = 1000;
+            const start = Date.now();
+            
+            function update() {
+                const elapsed = Date.now() - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const current = Math.round(from + (to - from) * easeOutCubic(progress));
+                
+                element.textContent = current;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                }
+            }
+            
+            requestAnimationFrame(update);
+        }
+
+        // Easing function
+        function easeOutCubic(t) {
+            return 1 - Math.pow(1 - t, 3);
+        }
+
+        // Animate data updates
+        function animateDataUpdate(newData) {
+            // Add pulse animation to changed items
+            newData.forEach(item => {
+                const optionElement = document.querySelector(`[data-option="${item.id}"]`);
+                if (optionElement) {
+                    optionElement.style.animation = 'none';
+                    optionElement.offsetHeight; // Trigger reflow
+                    optionElement.style.animation = 'optionPulse 0.6s ease-out';
+                }
+            });
+        }
+
+        // Update winner highlight
+        function updateWinnerHighlight() {
+            if (!currentData || !showWinner) return;
+            
+            const maxVotes = Math.max(...currentData.map(item => parseInt(item.votes)));
+            
+            document.querySelectorAll('.option-item').forEach((element, index) => {
+                const votes = parseInt(currentData[index]?.votes || 0);
+                if (votes === maxVotes && maxVotes > 0) {
+                    element.classList.add('winner');
+                } else {
+                    element.classList.remove('winner');
+                }
+            });
+        }
+
+        // Play notification sound
+        function playNotificationSound() {
+            // Create a simple beep sound using Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
         // Fullscreen functionality
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen();
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('Fullscreen not supported:', err);
+                });
             } else {
                 document.exitFullscreen();
             }
@@ -545,34 +1097,97 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
         // Refresh data
         function refreshData() {
-            window.location.reload();
+            fetchAndUpdateData();
+            
+            // Add visual feedback
+            const refreshBtn = document.querySelector('[onclick="refreshData()"]');
+            if (refreshBtn) {
+                refreshBtn.style.animation = 'spin 1s ease-out';
+                setTimeout(() => {
+                    refreshBtn.style.animation = '';
+                }, 1000);
+            }
         }
 
-        // Keyboard navigation
+        // Enhanced keyboard navigation
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                const prevBtn = document.querySelector('.navigation a[href*="index=<?php echo max(0, $currentIndex - 1); ?>"]');
-                if (prevBtn) prevBtn.click();
-            } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                const nextBtn = document.querySelector('.navigation a[href*="index=<?php echo min(count($polls) - 1, $currentIndex + 1); ?>"]');
-                if (nextBtn) nextBtn.click();
-            } else if (e.key === 'f' || e.key === 'F') {
-                toggleFullscreen();
-            } else if (e.key === 'r' || e.key === 'R') {
-                refreshData();
+            // Prevent default if we're handling the key
+            const handled = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'f', 'F', 'r', 'R', 's', 'S', 'Escape'].includes(e.key);
+            
+            if (handled) {
+                e.preventDefault();
+            }
+
+            switch(e.key) {
+                case 'ArrowLeft':
+                case 'ArrowUp':
+                    const prevBtn = document.querySelector('.navigation a[href*="index=<?php echo max(0, $currentIndex - 1); ?>"]');
+                    if (prevBtn) prevBtn.click();
+                    break;
+                    
+                case 'ArrowRight':
+                case 'ArrowDown':
+                    const nextBtn = document.querySelector('.navigation a[href*="index=<?php echo min(count($polls) - 1, $currentIndex + 1); ?>"]');
+                    if (nextBtn) nextBtn.click();
+                    break;
+                    
+                case 'f':
+                case 'F':
+                    toggleFullscreen();
+                    break;
+                    
+                case 'r':
+                case 'R':
+                    refreshData();
+                    break;
+                    
+                case 's':
+                case 'S':
+                    toggleSettings();
+                    break;
+                    
+                case 'Escape':
+                    const settingsPanel = document.getElementById('settingsPanel');
+                    if (settingsPanel.classList.contains('open')) {
+                        settingsPanel.classList.remove('open');
+                    }
+                    break;
             }
         });
 
-        // Animate progress bars on load
+        // Initialize on load
         window.addEventListener('load', function() {
+            // Animate progress bars on load
             const progressBars = document.querySelectorAll('.progress-fill');
-            progressBars.forEach(bar => {
+            progressBars.forEach((bar, index) => {
                 const width = bar.style.width;
                 bar.style.width = '0%';
                 setTimeout(() => {
                     bar.style.width = width;
-                }, 500);
+                }, 500 + (index * 100));
             });
+
+            // Initialize settings
+            initializeSettings();
+            
+            // Initial data fetch
+            setTimeout(fetchAndUpdateData, 1000);
+            
+            // Add CSS animations
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes optionPulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.02); }
+                    100% { transform: scale(1); }
+                }
+                
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
         });
     </script>
 </body>
