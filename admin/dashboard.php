@@ -156,6 +156,11 @@ $polls = $stmt->fetchAll(PDO::FETCH_ASSOC);
                            title="Präsentationsmodus öffnen">
                            📊 Präsentation
                         </a>
+                        <button class="btn btn-secondary mb-1" 
+                                onclick="showQRCode(<?php echo $poll['id']; ?>, '<?php echo htmlspecialchars($poll['question']); ?>')"
+                                title="QR-Code anzeigen">
+                           📱 QR-Code
+                        </button>
                         <a href="edit_poll?id=<?php echo $poll['id']; ?>" 
                            class="btn btn-primary mb-1">
                            ✏️ Bearbeiten
@@ -192,6 +197,11 @@ $polls = $stmt->fetchAll(PDO::FETCH_ASSOC);
                            title="Präsentationsmodus öffnen">
                            Präsentation
                         </a>
+                        <button class="btn btn-sm btn-secondary" 
+                                onclick="showQRCode(<?php echo $poll['id']; ?>, '<?php echo htmlspecialchars($poll['question']); ?>')"
+                                title="QR-Code anzeigen">
+                           QR-Code
+                        </button>
                         <a href="edit_poll?id=<?php echo $poll['id']; ?>" 
                            class="btn btn-sm btn-primary">
                            Bearbeiten
@@ -222,6 +232,92 @@ $polls = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </table>
     </div>
 </div>
+
+<!-- QR Code Modal -->
+<div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="qrModalLabel">QR-Code für Umfrage</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="qrCodeContainer">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Lädt...</span>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <h6 id="pollQuestion"></h6>
+                    <p class="text-muted mb-3">Scannen Sie diesen QR-Code, um zur Umfrage zu gelangen</p>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="pollUrl" readonly>
+                        <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard()">
+                            📋 Kopieren
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+                <button type="button" class="btn btn-primary" onclick="downloadQRCode()">📥 Herunterladen</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showQRCode(pollId, question) {
+    const modal = new bootstrap.Modal(document.getElementById('qrModal'));
+    const pollUrl = `${window.location.origin}${window.location.pathname.replace('/admin/dashboard', '')}?id=${pollId}`;
+    
+    // Update modal content
+    document.getElementById('pollQuestion').textContent = question;
+    document.getElementById('pollUrl').value = pollUrl;
+    
+    // Generate QR code
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pollUrl)}`;
+    document.getElementById('qrCodeContainer').innerHTML = `<img src="${qrCodeUrl}" alt="QR Code" class="img-fluid" style="max-width: 300px;">`;
+    
+    // Show modal
+    modal.show();
+}
+
+function copyToClipboard() {
+    const urlInput = document.getElementById('pollUrl');
+    urlInput.select();
+    urlInput.setSelectionRange(0, 99999); // For mobile devices
+    
+    try {
+        document.execCommand('copy');
+        // Show success feedback
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = '✅ Kopiert!';
+        button.classList.remove('btn-outline-secondary');
+        button.classList.add('btn-success');
+        
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove('btn-success');
+            button.classList.add('btn-outline-secondary');
+        }, 2000);
+    } catch (err) {
+        console.error('Failed to copy: ', err);
+        alert('URL konnte nicht kopiert werden. Bitte manuell kopieren.');
+    }
+}
+
+function downloadQRCode() {
+    const qrCodeImg = document.querySelector('#qrCodeContainer img');
+    if (qrCodeImg) {
+        const link = document.createElement('a');
+        link.download = `qr-code-umfrage-${document.getElementById('pollQuestion').textContent.substring(0, 20)}.png`;
+        link.href = qrCodeImg.src;
+        link.click();
+    }
+}
+</script>
 
 <!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
