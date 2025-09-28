@@ -293,90 +293,75 @@ const pollChart = new Chart(ctx, {
 <?php endif; ?>
 
 <script>
-// Live updates functionality
-let pollChart = null;
-const pollId = <?php echo $pollId; ?>;
+// Function to fetch results for a specific poll and animate progress bars (EXACT COPY FROM HOMEPAGE)
+function fetchResults(pollId) {
+  $.get('../results.php', { poll_id: pollId }, function(data) {
+    let totalVotes = data.reduce((sum, item) => sum + parseInt(item.votes, 10), 0);
+    if (totalVotes === 0) totalVotes = 1;
 
-// Initialize chart reference
-<?php if ($totalVotes > 0): ?>
-pollChart = window.pollChart || Chart.getChart('pollChart');
-<?php endif; ?>
+    // Update total votes display
+    $('[data-total-votes]').text(totalVotes === 1 && data.every(item => item.votes == 0) ? 0 : totalVotes);
 
-// Function to fetch results (exactly like homepage)
-function fetchResults() {
-    const pollId = <?php echo $pollId; ?>;
-    console.log('Fetching results for poll:', pollId);
-    $.get('../results.php', { poll_id: pollId }, function(data) {
-        console.log('Received data:', data);
-        let totalVotes = data.reduce((sum, item) => sum + parseInt(item.votes, 10), 0);
-        if (totalVotes === 0) totalVotes = 1;
-        
-        // Update total votes display
-        $('[data-total-votes]').text(totalVotes > 1 ? totalVotes : (totalVotes === 1 ? 1 : 0));
+    data.forEach(item => {
+      const optionId  = item.id;
+      const text      = item.option_text;
+      const votes     = parseInt(item.votes, 10);
+      const newPerc   = Math.round((votes / totalVotes) * 100);
 
-        data.forEach(item => {
-            const optionId = item.id;
-            const votes = parseInt(item.votes, 10);
-            const newPerc = Math.round((votes / totalVotes) * 100);
-
-            // Update vote count with proper pluralization
-            const voteText = votes + ' Stimme' + (votes !== 1 ? 'n' : '');
-            $(`[data-option-id="${optionId}"] [data-vote-count]`).text(voteText);
-            
-            // Update percentage
-            $(`[data-option-id="${optionId}"] [data-percentage]`).text('(' + newPerc + '%)');
-            
-            // Update progress bar
-            const $progressBar = $(`[data-option-id="${optionId}"] .progress-bar`);
-            $progressBar.attr('aria-valuenow', newPerc).css('width', newPerc + '%');
-        });
-
-        // Update chart if it exists
-        if (window.pollChart) {
-            window.pollChart.data.datasets[0].data = data.map(item => item.votes);
-            window.pollChart.update('active');
-        }
-        
-        // Update statistics
-        if (totalVotes > 1) {
-            updateStatistics(data, totalVotes);
-        }
-        
-        // Update last updated indicator
-        updateLastUpdated();
-        
-    }, 'json').fail(function(xhr, status, error) {
-        console.error('Failed to fetch results:', error);
+      // Update vote count
+      $(`[data-option-id="${optionId}"] [data-vote-count]`).text(`${votes} Stimme${votes !== 1 ? 'n' : ''}`);
+      
+      // Update percentage
+      $(`[data-option-id="${optionId}"] [data-percentage]`).text(`(${newPerc}%)`);
+      
+      // Update progress bar with animation like homepage
+      const $bar = $(`[data-option-id="${optionId}"] .progress-bar`);
+      let oldPercent = parseInt($bar.attr('aria-valuenow'), 10) || 0;
+      $bar.css('width', oldPercent + '%');
+      setTimeout(() => {
+        $bar.attr('aria-valuenow', newPerc).css('width', newPerc + '%');
+      }, 50);
     });
+
+    // Update chart if it exists
+    if (window.pollChart) {
+        window.pollChart.data.datasets[0].data = data.map(item => item.votes);
+        window.pollChart.update('active');
+    }
+
+    // Update statistics
+    updateStatistics(data, totalVotes);
+    
+    // Update last updated indicator
+    updateLastUpdated();
+    
+  }, 'json');
 }
 
-
 // Update statistics card
-function updateStatistics(options, totalVotes) {
+function updateStatistics(data, totalVotes) {
     const statsCard = document.querySelector('[data-stats-card]');
     if (!statsCard) return;
     
-    if (totalVotes > 0 && options.length > 0) {
+    const realTotalVotes = data.reduce((sum, item) => sum + parseInt(item.votes, 10), 0);
+    
+    if (realTotalVotes > 0 && data.length > 0) {
         // Find the option with most votes
-        const topOption = options.reduce((max, option) => 
+        const topOption = data.reduce((max, option) => 
             parseInt(option.votes) > parseInt(max.votes) ? option : max
         );
         
-        const percentage = ((parseInt(topOption.votes) / totalVotes) * 100);
-        const formattedPerc = percentage % 1 === 0 ? percentage.toFixed(0) : percentage.toFixed(1);
+        const percentage = Math.round((parseInt(topOption.votes) / realTotalVotes) * 100);
         
         statsCard.innerHTML = `
             <p><strong>Beliebteste Option:</strong><br>
             <span class="text-primary">${escapeHtml(topOption.option_text)}</span><br>
-            <small class="text-muted">${topOption.votes} Stimmen (${formattedPerc}%)</small></p>
+            <small class="text-muted">${topOption.votes} Stimmen (${percentage}%)</small></p>
         `;
     } else {
         statsCard.innerHTML = '<p class="text-muted">Noch keine Stimmen abgegeben.</p>';
     }
 }
-
-
-
 
 // Update last updated indicator
 function updateLastUpdated() {
@@ -390,7 +375,7 @@ function updateLastUpdated() {
         const header = document.querySelector('h2');
         if (header) {
             const container = document.createElement('div');
-            container.className = 'd-flex justify-content-between align-items-center';
+            container.className = 'd-flex justify-content-between align-items-center mb-3';
             header.parentNode.insertBefore(container, header);
             container.appendChild(header);
             container.appendChild(indicator);
@@ -401,23 +386,23 @@ function updateLastUpdated() {
     indicator.textContent = `Zuletzt aktualisiert: ${now.toLocaleTimeString('de-DE')}`;
 }
 
-// Utility functions
+// Helper function to escape HTML
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
 
-function formatDateTime(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleString('de-DE');
-}
+// Initialize chart reference
+<?php if ($totalVotes > 0): ?>
+window.pollChart = window.pollChart || Chart.getChart('pollChart');
+<?php endif; ?>
 
-// Start live updates (exactly like homepage)
+// Start live updates (EXACT COPY FROM HOMEPAGE)
 $(document).ready(function() {
-    console.log('Starting live updates for poll <?php echo $pollId; ?>');
-    fetchResults(); // Initial load
-    setInterval(fetchResults, 5000); // Update every 5 seconds
+    const pollId = <?php echo $pollId; ?>;
+    fetchResults(pollId);
+    setInterval(() => fetchResults(pollId), 5000);
 });
 
 // Add visual indicator for live updates
