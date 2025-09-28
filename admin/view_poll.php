@@ -244,7 +244,7 @@ $recentVotes = $stmtRecentVotes->fetchAll(PDO::FETCH_ASSOC);
 <script>
 // Chart.js pie chart
 const ctx = document.getElementById('pollChart').getContext('2d');
-window.pollChart = new Chart(ctx, {
+const pollChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
         labels: [
@@ -299,18 +299,16 @@ const pollId = <?php echo $pollId; ?>;
 
 // Initialize chart reference
 <?php if ($totalVotes > 0): ?>
-pollChart = window.pollChart;
+pollChart = window.pollChart || Chart.getChart('pollChart');
 <?php endif; ?>
 
 // Function to update poll data
 async function updatePollData() {
     try {
-        console.log('Fetching poll data...');
         const response = await fetch(`poll_data.php?id=${pollId}`);
         if (!response.ok) throw new Error('Failed to fetch data');
         
         const data = await response.json();
-        console.log('Poll data received:', data);
         
         // Update total votes
         updateTotalVotes(data.totalVotes);
@@ -329,8 +327,6 @@ async function updatePollData() {
         
         // Update last updated indicator
         updateLastUpdated();
-        
-        console.log('Poll data updated successfully');
         
     } catch (error) {
         console.error('Error updating poll data:', error);
@@ -396,15 +392,9 @@ function updateProgressBars(options, totalVotes) {
 
 // Update chart
 function updateChart(options, totalVotes) {
-    // Try to get chart reference if we don't have it
-    if (!pollChart && window.pollChart) {
-        pollChart = window.pollChart;
-    }
-    
     if (!pollChart || totalVotes === 0) {
         // If no chart exists and we now have votes, reload the page to create it
         if (!pollChart && totalVotes > 0) {
-            console.log('No chart found but votes exist, reloading page to create chart...');
             location.reload();
             return;
         }
@@ -477,7 +467,10 @@ function formatDateTime(dateString) {
     return date.toLocaleString('de-DE');
 }
 
-// Add visual indicator for live updates and start updates
+// Start live updates
+setInterval(updatePollData, 5000); // Update every 5 seconds
+
+// Add visual indicator for live updates
 document.addEventListener('DOMContentLoaded', function() {
     // Add live indicator
     const header = document.querySelector('h2');
@@ -499,22 +492,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     `;
     document.head.appendChild(style);
-    
-    // Wait a bit for chart to be fully initialized, then start live updates
-    setTimeout(function() {
-        // Re-initialize chart reference in case it wasn't ready before
-        <?php if ($totalVotes > 0): ?>
-        if (window.pollChart) {
-            pollChart = window.pollChart;
-        }
-        <?php endif; ?>
-        
-        // Start live updates
-        setInterval(updatePollData, 5000); // Update every 5 seconds
-        
-        // Do an initial update after 1 second
-        setTimeout(updatePollData, 1000);
-    }, 500);
 });
 </script>
 

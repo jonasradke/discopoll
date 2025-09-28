@@ -1,24 +1,55 @@
 <?php
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 include_once 'config.php';
+
+// Check if database connection exists
+if (!isset($pdo)) {
+    die("Database connection failed. Please check your configuration.");
+}
 
 // Get poll ID from query parameter, or show all active polls
 $pollId = isset($_GET['id']) ? (int)$_GET['id'] : null;
 
-if ($pollId) {
-    // Single poll presentation
-    $stmt = $pdo->prepare("SELECT * FROM polls WHERE id = :id AND archived = 0");
-    $stmt->execute([':id' => $pollId]);
-    $poll = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    if (!$poll) {
-        die("Poll not found or archived.");
+try {
+    if ($pollId) {
+        // Single poll presentation
+        // First check if archived column exists
+        $stmt = $pdo->prepare("SHOW COLUMNS FROM polls LIKE 'archived'");
+        $stmt->execute();
+        $hasArchivedColumn = $stmt->fetch() !== false;
+        
+        if ($hasArchivedColumn) {
+            $stmt = $pdo->prepare("SELECT * FROM polls WHERE id = :id AND archived = 0");
+        } else {
+            $stmt = $pdo->prepare("SELECT * FROM polls WHERE id = :id");
+        }
+        $stmt->execute([':id' => $pollId]);
+        $poll = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$poll) {
+            die("Poll not found" . ($hasArchivedColumn ? " or archived" : "") . ".");
+        }
+        
+        $polls = [$poll];
+    } else {
+        // All active polls presentation
+        // First check if archived column exists
+        $stmt = $pdo->prepare("SHOW COLUMNS FROM polls LIKE 'archived'");
+        $stmt->execute();
+        $hasArchivedColumn = $stmt->fetch() !== false;
+        
+        if ($hasArchivedColumn) {
+            $stmt = $pdo->query("SELECT * FROM polls WHERE archived = 0 ORDER BY created_at DESC");
+        } else {
+            $stmt = $pdo->query("SELECT * FROM polls ORDER BY created_at DESC");
+        }
+        $polls = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    
-    $polls = [$poll];
-} else {
-    // All active polls presentation
-    $stmt = $pdo->query("SELECT * FROM polls WHERE archived = 0 ORDER BY created_at DESC");
-    $polls = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Database error: " . $e->getMessage());
 }
 
 // Get current poll index for navigation
