@@ -162,6 +162,39 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              overflow: hidden;
          }
 
+         .qr-code-container {
+             margin-top: 1.5rem;
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             gap: 0.5rem;
+         }
+
+         .qr-code {
+             width: 120px;
+             height: 120px;
+             background: white;
+             border-radius: 12px;
+             padding: 8px;
+             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+             display: flex;
+             align-items: center;
+             justify-content: center;
+         }
+
+         .qr-code img {
+             width: 100%;
+             height: 100%;
+             border-radius: 8px;
+         }
+
+         .qr-text {
+             color: var(--text-secondary);
+             font-size: 0.9rem;
+             margin: 0;
+             font-weight: 500;
+         }
+
          .floating-logo {
              position: fixed;
              top: 1rem;
@@ -597,118 +630,9 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             border-color: var(--accent-primary);
         }
 
-         .control-btn:hover::before {
-             opacity: 0.2;
-         }
-
-         /* QR Code Modal */
-         .qr-modal {
-             position: fixed;
-             top: 0;
-             left: 0;
-             width: 100%;
-             height: 100%;
-             background: rgba(0, 0, 0, 0.8);
-             backdrop-filter: blur(10px);
-             z-index: 2000;
-             display: flex;
-             align-items: center;
-             justify-content: center;
-         }
-
-         .qr-modal-content {
-             background: var(--glass-bg);
-             backdrop-filter: blur(30px);
-             border: 1px solid var(--glass-border);
-             border-radius: 20px;
-             padding: 2rem;
-             max-width: 400px;
-             width: 90%;
-             text-align: center;
-             box-shadow: var(--shadow-glow);
-         }
-
-         .qr-modal-header {
-             display: flex;
-             justify-content: space-between;
-             align-items: center;
-             margin-bottom: 1.5rem;
-         }
-
-         .qr-modal-header h3 {
-             margin: 0;
-             color: var(--text-primary);
-             font-size: 1.2rem;
-         }
-
-         .qr-close {
-             background: none;
-             border: none;
-             font-size: 1.5rem;
-             color: var(--text-secondary);
-             cursor: pointer;
-             padding: 0;
-             width: 30px;
-             height: 30px;
-             display: flex;
-             align-items: center;
-             justify-content: center;
-             border-radius: 50%;
-             transition: all 0.3s ease;
-         }
-
-         .qr-close:hover {
-             background: rgba(255, 0, 0, 0.1);
-             color: #ff4444;
-         }
-
-         .qr-modal-body {
-             color: var(--text-primary);
-         }
-
-         #qrcode {
-             margin: 1rem 0;
-             display: flex;
-             justify-content: center;
-         }
-
-         .qr-text {
-             margin: 1rem 0;
-             color: var(--text-secondary);
-             font-size: 0.9rem;
-         }
-
-         .qr-url {
-             display: flex;
-             gap: 0.5rem;
-             margin-top: 1rem;
-         }
-
-         .qr-url input {
-             flex: 1;
-             padding: 0.5rem;
-             border: 1px solid var(--glass-border);
-             border-radius: 8px;
-             background: var(--glass-bg);
-             color: var(--text-primary);
-             font-size: 0.8rem;
-         }
-
-         .qr-url button {
-             padding: 0.5rem 1rem;
-             background: var(--accent-primary);
-             color: white;
-             border: none;
-             border-radius: 8px;
-             cursor: pointer;
-             font-size: 0.8rem;
-             transition: all 0.3s ease;
-         }
-
-         .qr-url button:hover {
-             background: var(--accent-secondary);
-             transform: scale(1.05);
-         }
+        .control-btn:hover::before {
+            opacity: 0.2;
+        }
 
         /* No votes state */
         .no-votes {
@@ -815,9 +739,6 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             <button class="control-btn" onclick="refreshData()" title="Refresh">
                 ↻
             </button>
-            <button class="control-btn" onclick="showQRCode()" title="Show QR Code">
-                📱
-            </button>
         </div>
 
         <!-- Floating Logo -->
@@ -838,6 +759,12 @@ $totalVotes = array_sum(array_column($options, 'votes'));
                      <span class="live-dot"></span>
                      LIVE
                  </span>
+             </div>
+             
+             <!-- QR Code -->
+             <div class="qr-code-container">
+                 <div class="qr-code" id="qrCode"></div>
+                 <p class="qr-text">Scan to vote</p>
              </div>
         </div>
 
@@ -966,6 +893,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
     <!-- jQuery for AJAX -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     
     <script>
          // Function to fetch results for the current poll and animate progress bars
@@ -1054,77 +982,32 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
             // Start auto-refresh every 5 seconds
             setInterval(fetchResults, 5000);
-        });
-
-        // QR Code functionality
-        function showQRCode() {
-            const currentUrl = window.location.href;
-            const voteUrl = currentUrl.replace('/presentation', '/vote');
-            
-            document.getElementById('qrUrl').value = voteUrl;
-            document.getElementById('qrModal').style.display = 'flex';
             
             // Generate QR code
-            QRCode.toCanvas(document.getElementById('qrcode'), voteUrl, {
-                width: 200,
-                height: 200,
+            generateQRCode();
+        });
+        
+        // Generate QR code for the poll
+        function generateQRCode() {
+            const pollId = <?php echo $currentPoll['id']; ?>;
+            const pollUrl = `${window.location.origin}${window.location.pathname.replace('/presentation', '')}?id=${pollId}`;
+            
+            QRCode.toCanvas(document.getElementById('qrCode'), pollUrl, {
+                width: 104,
+                height: 104,
                 color: {
-                    dark: '#00d4ff',
-                    light: '#ffffff'
-                }
+                    dark: '#000000',
+                    light: '#FFFFFF'
+                },
+                margin: 1,
+                errorCorrectionLevel: 'M'
             }, function (error) {
-                if (error) console.error('QR Code generation failed:', error);
+                if (error) {
+                    console.error('QR Code generation failed:', error);
+                    document.getElementById('qrCode').innerHTML = '<div style="color: #666; font-size: 12px; text-align: center; padding: 20px;">QR Code<br>Error</div>';
+                }
             });
         }
-
-        function closeQRCode() {
-            document.getElementById('qrModal').style.display = 'none';
-        }
-
-        function copyQRUrl() {
-            const urlInput = document.getElementById('qrUrl');
-            urlInput.select();
-            urlInput.setSelectionRange(0, 99999);
-            document.execCommand('copy');
-            
-            // Show feedback
-            const button = event.target;
-            const originalText = button.textContent;
-            button.textContent = '✅ Kopiert!';
-            button.style.background = '#4CAF50';
-            
-            setTimeout(() => {
-                button.textContent = originalText;
-                button.style.background = '';
-            }, 2000);
-        }
-
-        // Close modal when clicking outside
-        document.getElementById('qrModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeQRCode();
-            }
-        });
     </script>
-
-    <!-- QR Code Modal -->
-    <div id="qrModal" class="qr-modal" style="display: none;">
-        <div class="qr-modal-content">
-            <div class="qr-modal-header">
-                <h3>📱 QR Code für diese Umfrage</h3>
-                <button class="qr-close" onclick="closeQRCode()">&times;</button>
-            </div>
-            <div class="qr-modal-body">
-                <div id="qrcode"></div>
-                <p class="qr-text">Scannen Sie diesen Code, um an der Umfrage teilzunehmen</p>
-                <div class="qr-url">
-                    <input type="text" id="qrUrl" readonly>
-                    <button onclick="copyQRUrl()">📋 Kopieren</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </body>
 </html>

@@ -17,186 +17,12 @@ $allPolls = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="assets/style.css" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Responsive -->
 
-    <!-- Vote Confirmation Modal -->
-    <div id="voteConfirmModal" class="vote-confirm-modal" style="display: none;">
-        <div class="vote-confirm-content">
-            <div class="vote-confirm-header">
-                <h3>🗳️ Stimme bestätigen</h3>
-            </div>
-            <div class="vote-confirm-body">
-                <div class="vote-confirm-icon">
-                    <div class="vote-icon">🗳️</div>
-                </div>
-                <p class="vote-confirm-text">Möchten Sie wirklich für folgende Option stimmen?</p>
-                <div class="selected-option">
-                    <strong id="selectedOptionText"></strong>
-                </div>
-                <p class="vote-warning">⚠️ Sie können Ihre Stimme nach dem Abgeben nicht mehr ändern!</p>
-            </div>
-            <div class="vote-confirm-footer">
-                <button class="btn btn-secondary" onclick="cancelVote()">❌ Abbrechen</button>
-                <button class="btn btn-primary" onclick="confirmVote()">✅ Bestätigen</button>
-            </div>
-        </div>
-    </div>
-
     <!-- jQuery for AJAX -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         /* Optional: Animate progress bars smoothly */
         .progress-bar {
             transition: width 0.5s ease-in-out;
-        }
-
-        /* Vote Confirmation Modal */
-        .vote-confirm-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            z-index: 2000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .vote-confirm-content {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            max-width: 400px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            animation: modalSlideIn 0.3s ease-out;
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .vote-confirm-header h3 {
-            margin: 0 0 1rem 0;
-            color: #333;
-            font-size: 1.3rem;
-        }
-
-        .vote-confirm-icon {
-            margin: 1rem 0;
-        }
-
-        .vote-icon {
-            font-size: 3rem;
-            animation: bounce 1s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
-                transform: translateY(0);
-            }
-            40% {
-                transform: translateY(-10px);
-            }
-            60% {
-                transform: translateY(-5px);
-            }
-        }
-
-        .vote-confirm-text {
-            color: #666;
-            margin: 1rem 0;
-            font-size: 1rem;
-        }
-
-        .selected-option {
-            background: #f8f9fa;
-            border: 2px solid #007bff;
-            border-radius: 10px;
-            padding: 1rem;
-            margin: 1rem 0;
-            color: #007bff;
-            font-size: 1.1rem;
-        }
-
-        .vote-warning {
-            color: #dc3545;
-            font-size: 0.9rem;
-            margin: 1rem 0;
-            font-weight: 500;
-        }
-
-        .vote-confirm-footer {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            margin-top: 1.5rem;
-        }
-
-        .vote-confirm-footer .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .vote-confirm-footer .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Reactions */
-        .reactions-section {
-            border-top: 1px solid #e9ecef;
-            padding-top: 0.75rem;
-        }
-
-        .reactions-display {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .reaction-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.25rem 0.5rem;
-            border: 1px solid #dee2e6;
-            border-radius: 20px;
-            background: #f8f9fa;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            user-select: none;
-        }
-
-        .reaction-btn:hover {
-            background: #e9ecef;
-            transform: scale(1.1);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .reaction-btn.active {
-            background: #007bff;
-            color: white;
-            border-color: #007bff;
-            transform: scale(1.1);
-        }
-
-        .reaction-count {
-            font-weight: 500;
-            font-size: 0.8rem;
         }
     </style>
 </head>
@@ -262,17 +88,6 @@ $allPolls = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             </div>
                         <?php endif; ?>
                         
-                        <!-- Reactions Section -->
-                        <div class="reactions-section mt-3" data-poll-id="<?php echo $poll['id']; ?>">
-                            <div class="reactions-display">
-                                <span class="reaction-btn" data-reaction="👍" title="Like">👍 <span class="reaction-count" data-reaction="👍">0</span></span>
-                                <span class="reaction-btn" data-reaction="❤️" title="Love">❤️ <span class="reaction-count" data-reaction="❤️">0</span></span>
-                                <span class="reaction-btn" data-reaction="😂" title="Laugh">😂 <span class="reaction-count" data-reaction="😂">0</span></span>
-                                <span class="reaction-btn" data-reaction="😮" title="Wow">😮 <span class="reaction-count" data-reaction="😮">0</span></span>
-                                <span class="reaction-btn" data-reaction="😢" title="Sad">😢 <span class="reaction-count" data-reaction="😢">0</span></span>
-                            </div>
-                        </div>
-                        
                     </div>
                 </div> <!-- End card -->
             <?php endforeach; ?>
@@ -332,125 +147,25 @@ $(document).ready(function() {
         setInterval(() => fetchResults(pollId), 5000);
     });
 
-        $('.pollForm').on('submit', function(e) {
-            e.preventDefault();
-            const pollId   = $(this).data('pollid');
-            const optionId = $(this).find('input[name="option_id"]:checked').val();
-            const $form    = $(this);
-            const selectedOption = $(this).find('input[name="option_id"]:checked').next('label').text();
+    $('.pollForm').on('submit', function(e) {
+        e.preventDefault();
+        const pollId   = $(this).data('pollid');
+        const optionId = $(this).find('input[name="option_id"]:checked').val();
+        const $form    = $(this);
 
-            // Show custom confirmation popup
-            showVoteConfirmation(selectedOption, function() {
-                // User confirmed, proceed with vote
-                $.post('vote.php', { poll_id: pollId, option_id: optionId }, function() {
-                    document.cookie = `voted_poll_${pollId}=1; path=/; max-age=${30 * 24 * 60 * 60}`;
-                    $form.closest('.card-body').html(`
-                        <div class="pollResults h-100 d-flex flex-column justify-content-center"
-                             id="results_${pollId}"
-                             data-hasvoted="1"
-                             data-pollid="${pollId}">
-                        </div>
-                    `);
-                    fetchResults(pollId);
-                    setInterval(() => fetchResults(pollId), 5000);
-                });
-            });
+        $.post('vote.php', { poll_id: pollId, option_id: optionId }, function() {
+            document.cookie = `voted_poll_${pollId}=1; path=/; max-age=${30 * 24 * 60 * 60}`;
+            $form.closest('.card-body').html(`
+                <div class="pollResults h-100 d-flex flex-column justify-content-center"
+                     id="results_${pollId}"
+                     data-hasvoted="1"
+                     data-pollid="${pollId}">
+                </div>
+            `);
+            fetchResults(pollId);
+            setInterval(() => fetchResults(pollId), 5000);
         });
-
-        // Vote confirmation functionality
-        let voteCallback = null;
-
-        function showVoteConfirmation(selectedOption, callback) {
-            document.getElementById('selectedOptionText').textContent = selectedOption;
-            document.getElementById('voteConfirmModal').style.display = 'flex';
-            voteCallback = callback;
-        }
-
-        function confirmVote() {
-            document.getElementById('voteConfirmModal').style.display = 'none';
-            if (voteCallback) {
-                voteCallback();
-            }
-        }
-
-        function cancelVote() {
-            document.getElementById('voteConfirmModal').style.display = 'none';
-            voteCallback = null;
-        }
-
-        // Close modal when clicking outside
-        document.getElementById('voteConfirmModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                cancelVote();
-            }
-        });
-
-        // Reactions functionality
-        $('.reaction-btn').on('click', function() {
-            const pollId = $(this).closest('.reactions-section').data('poll-id');
-            const reaction = $(this).data('reaction');
-            const $btn = $(this);
-            
-            // Toggle reaction
-            if ($btn.hasClass('active')) {
-                // Remove reaction
-                removeReaction(pollId, reaction, $btn);
-            } else {
-                // Add reaction
-                addReaction(pollId, reaction, $btn);
-            }
-        });
-
-        function addReaction(pollId, reaction, $btn) {
-            $.post('add_reaction.php', { 
-                poll_id: pollId, 
-                reaction: reaction 
-            }, function(response) {
-                if (response.success) {
-                    $btn.addClass('active');
-                    updateReactionCount($btn, 1);
-                }
-            }, 'json');
-        }
-
-        function removeReaction(pollId, reaction, $btn) {
-            $.post('remove_reaction.php', { 
-                poll_id: pollId, 
-                reaction: reaction 
-            }, function(response) {
-                if (response.success) {
-                    $btn.removeClass('active');
-                    updateReactionCount($btn, -1);
-                }
-            }, 'json');
-        }
-
-        function updateReactionCount($btn, change) {
-            const $count = $btn.find('.reaction-count');
-            const currentCount = parseInt($count.text()) || 0;
-            const newCount = Math.max(0, currentCount + change);
-            $count.text(newCount);
-        }
-
-        // Load existing reactions on page load
-        $('.reactions-section').each(function() {
-            const pollId = $(this).data('poll-id');
-            loadReactions(pollId);
-        });
-
-        function loadReactions(pollId) {
-            $.get('get_reactions.php', { poll_id: pollId }, function(data) {
-                if (data.success) {
-                    data.reactions.forEach(function(reaction) {
-                        const $btn = $(`.reactions-section[data-poll-id="${pollId}"] .reaction-btn[data-reaction="${reaction.reaction}"]`);
-                        $btn.find('.reaction-count').text(reaction.count);
-                        if (reaction.user_reacted) {
-                            $btn.addClass('active');
-                        }
-                    });
-                }
-            }, 'json');
-        }
+    });
 });
 </script>
 
