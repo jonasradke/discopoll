@@ -269,7 +269,7 @@ $polls = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script>
 function showQRCode(pollId, question) {
     const modal = new bootstrap.Modal(document.getElementById('qrModal'));
-    const pollUrl = `${window.location.origin}${window.location.pathname.replace('/admin/dashboard', '')}?id=${pollId}`;
+    const pollUrl = `${window.location.origin}/?id=${pollId}`;
     
     // Update modal content
     document.getElementById('pollQuestion').textContent = question;
