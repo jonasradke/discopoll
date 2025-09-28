@@ -90,6 +90,26 @@ $totalVotes = array_sum(array_column($options, 'votes'));
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
+        :root {
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --accent-primary: #00d4ff;
+            --accent-secondary: #ff6b6b;
+            --accent-tertiary: #4ecdc4;
+            --accent-quaternary: #45b7d1;
+            --accent-success: #96ceb4;
+            --accent-warning: #ffeaa7;
+            --accent-purple: #a29bfe;
+            --text-primary: #ffffff;
+            --text-secondary: #b8c6db;
+            --text-muted: #74b9ff;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --shadow-dark: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -98,10 +118,32 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
             min-height: 100vh;
-            color: #fff;
+            color: var(--text-primary);
             overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated background particles */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 107, 107, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
+            animation: backgroundFloat 20s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        @keyframes backgroundFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
         }
 
         .presentation-container {
@@ -115,51 +157,83 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         .header {
             padding: 2rem;
             text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border-bottom: 1px solid var(--glass-border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            animation: headerShine 4s ease-in-out infinite;
+        }
+
+        @keyframes headerShine {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
         }
 
         .poll-title {
             font-size: clamp(2rem, 5vw, 4rem);
             font-weight: 700;
             margin-bottom: 1rem;
-            background: linear-gradient(45deg, #fff, #f0f0f0);
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary), var(--accent-secondary));
+            background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             line-height: 1.2;
+            animation: gradientShift 6s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
 
         .poll-meta {
             font-size: 1.2rem;
-            opacity: 0.8;
-            font-weight: 300;
+            color: var(--text-secondary);
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
         }
 
         .live-indicator {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            background: rgba(255, 59, 48, 0.2);
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 59, 48, 0.4);
+            background: linear-gradient(135deg, var(--accent-secondary), #ff8a80);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
             font-size: 0.9rem;
+            font-weight: 600;
             margin-left: 1rem;
+            box-shadow: var(--shadow-glow);
         }
 
         .live-dot {
-            width: 6px;
-            height: 6px;
-            background: #ff3b30;
+            width: 8px;
+            height: 8px;
+            background: #fff;
             border-radius: 50%;
             animation: livePulse 2s ease-in-out infinite;
         }
 
         @keyframes livePulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
         }
 
         /* Main Content */
@@ -186,21 +260,45 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         }
 
         .option-item {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 16px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
             padding: 2rem;
             margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
         }
 
-        .option-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        .option-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+            transition: left 0.6s ease;
         }
+
+        .option-item:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-dark), var(--shadow-glow);
+            border-color: var(--accent-primary);
+        }
+
+        .option-item:hover::before {
+            left: 100%;
+        }
+
+        .option-item:nth-child(1) { border-left: 3px solid var(--accent-primary); }
+        .option-item:nth-child(2) { border-left: 3px solid var(--accent-secondary); }
+        .option-item:nth-child(3) { border-left: 3px solid var(--accent-tertiary); }
+        .option-item:nth-child(4) { border-left: 3px solid var(--accent-quaternary); }
+        .option-item:nth-child(5) { border-left: 3px solid var(--accent-success); }
+        .option-item:nth-child(6) { border-left: 3px solid var(--accent-warning); }
+        .option-item:nth-child(7) { border-left: 3px solid var(--accent-purple); }
 
         .option-header {
             display: flex;
@@ -242,77 +340,142 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             font-size: 1.5rem;
             font-weight: 600;
             flex: 1;
+            color: var(--text-primary);
         }
 
         .option-stats {
             text-align: right;
-            opacity: 0.9;
+            color: var(--text-secondary);
         }
 
         .vote-count {
             font-size: 2rem;
             font-weight: 700;
             display: block;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .percentage {
             font-size: 1rem;
-            opacity: 0.7;
+            color: var(--text-muted);
+            font-weight: 500;
         }
 
         .progress-bar {
-            height: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
             overflow: hidden;
             position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #fff, rgba(255, 255, 255, 0.8));
-            border-radius: 4px;
-            transition: width 1s ease-out;
+            border-radius: 8px;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
+            overflow: hidden;
+        }
+
+        /* Different colored progress bars for each option */
+        .option-item:nth-child(1) .progress-fill {
+            background: linear-gradient(135deg, var(--accent-primary), #0099cc);
+        }
+        .option-item:nth-child(2) .progress-fill {
+            background: linear-gradient(135deg, var(--accent-secondary), #ff5252);
+        }
+        .option-item:nth-child(3) .progress-fill {
+            background: linear-gradient(135deg, var(--accent-tertiary), #26a69a);
+        }
+        .option-item:nth-child(4) .progress-fill {
+            background: linear-gradient(135deg, var(--accent-quaternary), #2196f3);
+        }
+        .option-item:nth-child(5) .progress-fill {
+            background: linear-gradient(135deg, var(--accent-success), #66bb6a);
+        }
+        .option-item:nth-child(6) .progress-fill {
+            background: linear-gradient(135deg, var(--accent-warning), #ffb74d);
+        }
+        .option-item:nth-child(7) .progress-fill {
+            background: linear-gradient(135deg, var(--accent-purple), #7986cb);
+        }
+
+        .progress-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(90deg, 
+                rgba(255, 255, 255, 0.3) 0%,
+                rgba(255, 255, 255, 0.1) 50%,
+                rgba(255, 255, 255, 0.3) 100%);
+            border-radius: 8px 8px 0 0;
         }
 
         .progress-fill::after {
             content: '';
             position: absolute;
             top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            animation: shimmer 2s infinite;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent 0%,
+                rgba(255, 255, 255, 0.4) 50%,
+                transparent 100%);
+            animation: shimmer 3s ease-in-out infinite;
         }
 
         @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
         }
 
         /* Chart Section */
         .chart-section {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
             border-radius: 24px;
             padding: 3rem;
             text-align: center;
             min-width: 400px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(0, 212, 255, 0.05) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         .chart-title {
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 2rem;
-            opacity: 0.9;
+            color: var(--text-primary);
+            position: relative;
+            z-index: 1;
         }
 
         #presentationChart {
             max-width: 350px;
             max-height: 350px;
+            position: relative;
+            z-index: 1;
         }
 
         /* Navigation */
@@ -327,25 +490,45 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         }
 
         .nav-btn {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
             border-radius: 50px;
             padding: 1rem 2rem;
-            color: white;
+            color: var(--text-primary);
             text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
+            opacity: 0.2;
+            transition: left 0.6s ease;
         }
 
         .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-            color: white;
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateY(-3px);
+            color: var(--text-primary);
             text-decoration: none;
+            box-shadow: var(--shadow-glow);
+            border-color: var(--accent-primary);
+        }
+
+        .nav-btn:hover::before {
+            left: 100%;
         }
 
         .nav-btn:disabled {
@@ -364,32 +547,67 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         }
 
         .control-btn {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 12px;
-            padding: 0.75rem;
-            color: white;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 1rem;
+            color: var(--text-primary);
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             font-size: 1.2rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent, var(--accent-primary), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
 
         .control-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.05);
+            background: rgba(0, 212, 255, 0.1);
+            transform: scale(1.1);
+            box-shadow: var(--shadow-glow);
+            border-color: var(--accent-primary);
+        }
+
+        .control-btn:hover::before {
+            opacity: 0.2;
         }
 
         /* No votes state */
         .no-votes {
             text-align: center;
             padding: 4rem 2rem;
-            opacity: 0.7;
+            color: var(--text-secondary);
         }
 
         .no-votes-icon {
             font-size: 4rem;
             margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .no-votes h2 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .no-votes p {
+            color: var(--text-muted);
         }
 
         /* Responsive */
@@ -547,16 +765,15 @@ $totalVotes = array_sum(array_column($options, 'votes'));
                         <?php endforeach; ?>
                     ],
                     backgroundColor: [
-                        'rgba(255, 255, 255, 0.9)',
-                        'rgba(255, 255, 255, 0.7)',
-                        'rgba(255, 255, 255, 0.5)',
-                        'rgba(255, 255, 255, 0.3)',
-                        'rgba(255, 255, 255, 0.8)',
-                        'rgba(255, 255, 255, 0.6)',
-                        'rgba(255, 255, 255, 0.4)',
-                        'rgba(255, 255, 255, 0.2)'
+                        '#00d4ff',
+                        '#ff6b6b', 
+                        '#4ecdc4',
+                        '#45b7d1',
+                        '#96ceb4',
+                        '#ffeaa7',
+                        '#a29bfe'
                     ],
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
                     borderWidth: 2
                 }]
             },
