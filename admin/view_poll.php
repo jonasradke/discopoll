@@ -64,9 +64,10 @@ $totalVotes = array_sum(array_column($options, 'votes'));
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Umfrage anzeigen</h2>
-        <div>
+        <div class="d-flex gap-2 flex-wrap">
             <a href="dashboard" class="btn btn-secondary">← Zurück</a>
             <a href="../presentation?id=<?php echo $pollId; ?>" class="btn btn-dark" target="_blank">📊 Präsentation</a>
+            <a href="edit_poll?id=<?php echo $pollId; ?>" class="btn btn-primary">✏️ Bearbeiten</a>
         </div>
     </div>
 
@@ -80,6 +81,13 @@ $totalVotes = array_sum(array_column($options, 'votes'));
                         <div class="col-md-6">
                             <p><strong>Poll ID:</strong> <?php echo $poll['id']; ?></p>
                             <p><strong>Erstellt am:</strong> <?php echo date('d.m.Y H:i', strtotime($poll['created_at'])); ?></p>
+                            <p><strong>Status:</strong> 
+                                <?php if (isset($poll['archived']) && $poll['archived']): ?>
+                                    <span class="badge bg-warning">Archiviert</span>
+                                <?php else: ?>
+                                    <span class="badge bg-success">Aktiv</span>
+                                <?php endif; ?>
+                            </p>
                         </div>
                         <div class="col-md-6">
                             <p><strong>Gesamtstimmen:</strong> <span id="total-votes"><?php echo $totalVotes; ?></span></p>
@@ -168,6 +176,51 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             <?php endif; ?>
         </div>
     </div>
+
+    <!-- Recent Activity -->
+    <?php
+    // Get recent votes for activity log
+    $stmtRecentVotes = $pdo->prepare("
+        SELECT pv.voted_at, po.option_text
+        FROM poll_votes pv
+        JOIN poll_options po ON pv.option_id = po.id
+        WHERE pv.poll_id = :poll_id
+        ORDER BY pv.voted_at DESC
+        LIMIT 10
+    ");
+    $stmtRecentVotes->execute([':poll_id' => $pollId]);
+    $recentVotes = $stmtRecentVotes->fetchAll(PDO::FETCH_ASSOC);
+    ?>
+
+    <?php if (count($recentVotes) > 0): ?>
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Letzte Aktivität</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Zeit</th>
+                                    <th>Option</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-activity">
+                                <?php foreach ($recentVotes as $vote): ?>
+                                <tr>
+                                    <td><small class="text-muted"><?php echo date('H:i:s', strtotime($vote['voted_at'])); ?></small></td>
+                                    <td><?php echo htmlspecialchars($vote['option_text']); ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 </div>
 
 <!-- Chart.js Script -->
@@ -294,12 +347,23 @@ function escapeHtml(text) {
 $(document).ready(function() {
     const pollId = <?php echo $pollId; ?>;
     
-    // Add live indicator
-    $('h2').append(' <span class="badge bg-success">🔴 Live</span>');
+    // Add live indicator with animation
+    $('h2').append(' <span class="badge bg-success" style="animation: pulse 2s infinite;">🔴 Live</span>');
     
-    // Start updates
+    // Add CSS for pulse animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Start updates (faster - every 2 seconds)
     fetchResults(pollId);
-    setInterval(() => fetchResults(pollId), 5000);
+    setInterval(() => fetchResults(pollId), 2000);
 });
 </script>
 
