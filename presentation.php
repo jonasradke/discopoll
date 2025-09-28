@@ -416,7 +416,8 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             grid-template-columns: 1fr auto;
             gap: 4rem;
             width: 100%;
-            max-width: 1400px;
+            max-width: 1600px;
+            min-width: 800px;
             align-items: center;
         }
 
@@ -435,6 +436,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            min-width: 600px;
         }
 
          .option-item:hover {
@@ -777,10 +779,15 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             .results-grid {
                 grid-template-columns: 1fr;
                 gap: 3rem;
+                min-width: 600px;
             }
             
             .chart-section {
                 min-width: auto;
+            }
+
+            .option-item {
+                min-width: 500px;
             }
         }
 
@@ -833,6 +840,15 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              
              .main-content {
                  padding: 2rem 1rem;
+             }
+
+             .results-grid {
+                 min-width: 400px;
+             }
+
+             .option-item {
+                 min-width: 350px;
+                 padding: 1.5rem;
              }
          }
 
@@ -895,6 +911,11 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              
              .option-item {
                  padding: 1.5rem;
+                 min-width: 300px;
+             }
+
+             .results-grid {
+                 min-width: 320px;
              }
              
              .chart-section {
