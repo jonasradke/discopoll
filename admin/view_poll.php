@@ -308,9 +308,6 @@ function fetchResults(pollId) {
         // Update statistics
         updateStatistics(data);
         
-        // Update recent activity
-        updateRecentActivity(pollId);
-        
     }, 'json').fail(function(xhr, status, error) {
         console.error('Failed to fetch poll results:', error);
     });
@@ -339,50 +336,6 @@ function updateStatistics(data) {
     }
 }
 
-// Update recent activity section
-function updateRecentActivity(pollId) {
-    console.log('Updating recent activity for poll:', pollId);
-    fetchRecentActivity(pollId);
-}
-
-// Fetch recent activity
-function fetchRecentActivity(pollId) {
-    console.log('Fetching recent activity for poll:', pollId);
-    $.get('get_recent_activity.php', { poll_id: pollId }, function(data) {
-        console.log('Activity data received:', data);
-        const activityTable = document.getElementById('recent-activity');
-        console.log('Activity table element:', activityTable);
-        if (activityTable) {
-            if (data && data.length > 0) {
-                console.log('Updating activity table with', data.length, 'items');
-                activityTable.innerHTML = data.map(vote => `
-                    <tr>
-                        <td><small class="text-muted">${formatTime(vote.voted_at)}</small></td>
-                        <td>${escapeHtml(vote.option_text)}</td>
-                    </tr>
-                `).join('');
-            } else {
-                console.log('No activity data, showing placeholder');
-                activityTable.innerHTML = '<tr><td colspan="2" class="text-muted text-center">Noch keine Aktivität</td></tr>';
-            }
-        } else {
-            console.log('Activity table not found!');
-        }
-    }, 'json').fail(function(xhr, status, error) {
-        console.log('Recent activity update failed:', error);
-        console.log('Response:', xhr.responseText);
-    });
-}
-
-// Format time for display
-function formatTime(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('de-DE', { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit' 
-    });
-}
 
 // Helper function to escape HTML
 function escapeHtml(text) {
