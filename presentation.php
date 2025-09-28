@@ -608,23 +608,28 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             display: flex;
             gap: 1rem;
             z-index: 1000;
+            align-items: center;
         }
 
         .nav-btn {
             background: var(--glass-bg);
             backdrop-filter: blur(30px);
             border: 1px solid var(--glass-border);
-            border-radius: 50px;
-            padding: 1rem 2rem;
+            border-radius: 25px;
+            padding: 0.8rem 1.5rem;
             color: var(--text-primary);
             text-decoration: none;
             font-weight: 600;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             position: relative;
             overflow: hidden;
+            min-width: 120px;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
         .nav-btn::before {
@@ -634,18 +639,54 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, var(--accent-primary), transparent);
-            opacity: 0.2;
-            transition: left 0.6s ease;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.3), transparent);
+            transition: left 0.5s ease;
         }
 
         .nav-btn:hover {
-            background: rgba(0, 212, 255, 0.1);
-            transform: translateY(-3px);
+            background: rgba(0, 212, 255, 0.15);
+            transform: translateY(-2px);
             color: var(--text-primary);
             text-decoration: none;
-            box-shadow: var(--shadow-glow);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.2);
             border-color: var(--accent-primary);
+        }
+
+        .nav-btn:hover::before {
+            left: 100%;
+        }
+
+        .nav-btn:active {
+            transform: translateY(0);
+            transition: all 0.1s ease;
+        }
+
+        .nav-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .nav-counter {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 0.6rem 1.2rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            min-width: 80px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-btn:hover .nav-icon {
+            transform: scale(1.1);
         }
 
         .nav-btn:hover::before {
@@ -832,6 +873,25 @@ $totalVotes = array_sum(array_column($options, 'votes'));
              .qr-text {
                  font-size: 0.75rem;
              }
+
+             .navigation {
+                 bottom: 1rem;
+                 gap: 0.5rem;
+                 flex-wrap: wrap;
+                 justify-content: center;
+             }
+
+             .nav-btn {
+                 padding: 0.6rem 1rem;
+                 font-size: 0.8rem;
+                 min-width: 100px;
+             }
+
+             .nav-counter {
+                 padding: 0.5rem 1rem;
+                 font-size: 0.8rem;
+                 min-width: 60px;
+             }
              
              .option-item {
                  padding: 1.5rem;
@@ -952,19 +1012,31 @@ $totalVotes = array_sum(array_column($options, 'votes'));
         <?php if (count($polls) > 1): ?>
         <div class="navigation">
             <?php if ($currentIndex > 0): ?>
-                <a href="?<?php echo $pollId ? "id={$pollId}&" : ''; ?>index=<?php echo $currentIndex - 1; ?>" class="nav-btn">
-                    ← Vorherige
+                <a href="?<?php echo $pollId ? "id={$pollId}&" : ''; ?>index=<?php echo $currentIndex - 1; ?>" class="nav-btn" title="Vorherige Umfrage">
+                    <span class="nav-icon">←</span>
+                    <span>Vorherige</span>
                 </a>
+            <?php else: ?>
+                <span class="nav-btn disabled" title="Keine vorherige Umfrage">
+                    <span class="nav-icon">←</span>
+                    <span>Vorherige</span>
+                </span>
             <?php endif; ?>
             
-            <span class="nav-btn" style="background: rgba(255, 255, 255, 0.3);">
+            <span class="nav-counter">
                 <?php echo $currentIndex + 1; ?> / <?php echo count($polls); ?>
             </span>
             
             <?php if ($currentIndex < count($polls) - 1): ?>
-                <a href="?<?php echo $pollId ? "id={$pollId}&" : ''; ?>index=<?php echo $currentIndex + 1; ?>" class="nav-btn">
-                    Nächste →
+                <a href="?<?php echo $pollId ? "id={$pollId}&" : ''; ?>index=<?php echo $currentIndex + 1; ?>" class="nav-btn" title="Nächste Umfrage">
+                    <span>Nächste</span>
+                    <span class="nav-icon">→</span>
                 </a>
+            <?php else: ?>
+                <span class="nav-btn disabled" title="Keine nächste Umfrage">
+                    <span>Nächste</span>
+                    <span class="nav-icon">→</span>
+                </span>
             <?php endif; ?>
         </div>
         <?php endif; ?>
