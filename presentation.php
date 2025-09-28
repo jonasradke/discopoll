@@ -121,6 +121,22 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             box-sizing: border-box;
         }
 
+        /* Performance optimizations */
+        .option-item, .progress-fill, .chart-container {
+            will-change: transform, width;
+            transform: translateZ(0); /* Force hardware acceleration */
+        }
+
+        .progress-fill {
+            transition: width 0.3s ease-out; /* Optimized transition */
+        }
+
+        /* Reduce repaints during animations */
+        .live-dot, .live-dot::after {
+            transform: translateZ(0);
+            will-change: opacity, transform;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 50%, var(--bg-tertiary) 100%);
@@ -895,47 +911,73 @@ $totalVotes = array_sum(array_column($options, 'votes'));
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <script>
-         // Function to fetch results for the current poll and animate progress bars
+         // Performance optimization: prevent multiple simultaneous requests
+         let isUpdating = false;
+         
+         // Function to fetch results for the current poll and animate progress bars (OPTIMIZED)
          function fetchResults() {
+             // Prevent multiple simultaneous requests
+             if (isUpdating) {
+                 return;
+             }
+             isUpdating = true;
              const pollId = <?php echo $currentPoll['id']; ?>;
              $.get('results.php', { poll_id: pollId }, function(data) {
                  let totalVotes = data.reduce((sum, item) => sum + parseInt(item.votes, 10), 0);
                  
-                 // Update total votes display
-                 $('#totalVotes').text(totalVotes);
-                 $('#votesPlural').text(totalVotes !== 1 ? 'n' : '');
+                 // Cache DOM elements to avoid repeated queries
+                 const $totalVotes = $('#totalVotes');
+                 const $votesPlural = $('#votesPlural');
+                 
+                 // Update total votes display (batch DOM updates)
+                 $totalVotes.text(totalVotes);
+                 $votesPlural.text(totalVotes !== 1 ? 'n' : '');
 
-                 // Avoid division by zero
-                 const divisor = totalVotes > 0 ? totalVotes : 1;
-
+                 // Process all options in one batch
+                 const updates = [];
                  data.forEach(item => {
                      const optionId = item.id;
-                     const text = item.option_text;
                      const votes = parseInt(item.votes, 10);
                      const newPerc = totalVotes > 0 ? (votes / totalVotes) * 100 : 0;
+                     const formattedPerc = newPerc % 1 === 0 ? newPerc.toFixed(0) : newPerc.toFixed(1);
+                     
+                     updates.push({
+                         optionId: optionId,
+                         votes: votes,
+                         percentage: formattedPerc,
+                         width: newPerc.toFixed(1) + '%'
+                     });
+                 });
 
-                     // Find elements for this option
-                     const $optionContainer = $(`[data-option="${optionId}"]`);
+                 // Batch DOM updates for better performance
+                 updates.forEach(update => {
+                     const $optionContainer = $(`[data-option="${update.optionId}"]`);
                      if ($optionContainer.length > 0) {
-                         // Update vote count
-                         $optionContainer.find('.vote-count').text(votes);
-                         
-                         // Update percentage (remove .0 from whole numbers)
-                         const formattedPerc = newPerc % 1 === 0 ? newPerc.toFixed(0) : newPerc.toFixed(1);
-                         $optionContainer.find('.percentage').text(formattedPerc + '%');
-                         
-                         // Update progress bar
-                         const $progressBar = $optionContainer.find('.progress-fill');
-                         $progressBar.css('width', newPerc.toFixed(1) + '%');
+                         // Update all elements at once
+                         $optionContainer.find('.vote-count').text(update.votes);
+                         $optionContainer.find('.percentage').text(update.percentage + '%');
+                         $optionContainer.find('.progress-fill').css('width', update.width);
                      }
                  });
 
-                 // Update chart if it exists
+                 // Update chart if it exists (only if data changed)
                  if (window.presentationChart) {
-                     window.presentationChart.data.datasets[0].data = data.map(item => item.votes);
-                     window.presentationChart.update('active');
+                     const newData = data.map(item => item.votes);
+                     const currentData = window.presentationChart.data.datasets[0].data;
+                     
+                     // Only update chart if data actually changed
+                     if (JSON.stringify(newData) !== JSON.stringify(currentData)) {
+                         window.presentationChart.data.datasets[0].data = newData;
+                         window.presentationChart.update('active');
+                     }
                  }
-             }, 'json');
+             }, 'json').fail(function() {
+                 // Silent fail to avoid console spam
+                 console.log('Poll update failed - will retry');
+             }).always(function() {
+                 // Always reset the flag
+                 isUpdating = false;
+             });
          }
 
         // Fullscreen functionality
@@ -979,15 +1021,19 @@ $totalVotes = array_sum(array_column($options, 'votes'));
                 }, 500);
             });
 
-            // Start auto-refresh every 5 seconds
-            setInterval(fetchResults, 5000);
+            // Start auto-refresh every 3 seconds (optimized)
+            setInterval(fetchResults, 3000);
             
             // Generate QR code
             generateQRCode();
         });
         
-        // Generate QR code for the poll using QR Server API
+        // Generate QR code for the poll using QR Server API (OPTIMIZED - runs once)
+        let qrCodeGenerated = false;
         function generateQRCode() {
+            if (qrCodeGenerated) return; // Only generate once
+            qrCodeGenerated = true;
+            
             const pollId = <?php echo $currentPoll['id']; ?>;
             const pollUrl = `${window.location.origin}${window.location.pathname.replace('/presentation', '')}?id=${pollId}`;
             
@@ -995,7 +1041,9 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=104x104&data=${encodeURIComponent(pollUrl)}`;
             
             const qrCodeElement = document.getElementById('qrCode');
-            qrCodeElement.innerHTML = `<img src="${qrCodeUrl}" alt="QR Code" style="width: 100%; height: 100%; border-radius: 8px;" onerror="this.parentElement.innerHTML='<div style=\'color: #666; font-size: 12px; text-align: center; padding: 20px;\'>QR Code<br>Error</div>'">`;
+            if (qrCodeElement) {
+                qrCodeElement.innerHTML = `<img src="${qrCodeUrl}" alt="QR Code" style="width: 100%; height: 100%; border-radius: 8px;" onerror="this.parentElement.innerHTML='<div style=\'color: #666; font-size: 12px; text-align: center; padding: 20px;\'>QR Code<br>Error</div>'">`;
+            }
         }
     </script>
 </body>
