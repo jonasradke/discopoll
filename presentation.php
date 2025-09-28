@@ -151,16 +151,35 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             position: relative;
         }
 
-        /* Header */
-        .header {
-            padding: 2rem;
-            text-align: center;
-            background: var(--glass-bg);
-            backdrop-filter: blur(30px);
-            border-bottom: 1px solid var(--glass-border);
-            position: relative;
-            overflow: hidden;
-        }
+         /* Header */
+         .header {
+             padding: 2rem;
+             text-align: center;
+             background: var(--glass-bg);
+             backdrop-filter: blur(30px);
+             border-bottom: 1px solid var(--glass-border);
+             position: relative;
+             overflow: hidden;
+         }
+
+         .header-content {
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             gap: 1.5rem;
+             margin-bottom: 1rem;
+         }
+
+         .spinning-logo {
+             height: 60px;
+             width: 60px;
+             animation: spin 10s linear infinite;
+         }
+
+         @keyframes spin {
+             0% { transform: rotate(0deg); }
+             100% { transform: rotate(360deg); }
+         }
 
          .poll-title {
              font-size: clamp(2rem, 5vw, 4rem);
@@ -527,28 +546,28 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             cursor: not-allowed;
         }
 
-        /* Controls */
-        .controls {
-            position: fixed;
-            top: 2rem;
-            right: 2rem;
-            display: flex;
-            gap: 1rem;
-            z-index: 1000;
-        }
+         /* Controls */
+         .controls {
+             position: fixed;
+             top: 1rem;
+             right: 1rem;
+             display: flex;
+             gap: 0.5rem;
+             z-index: 1000;
+         }
 
         .control-btn {
             background: var(--glass-bg);
             backdrop-filter: blur(30px);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 1rem;
+            border-radius: 12px;
+            padding: 0.75rem;
             color: var(--text-primary);
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            font-size: 1.2rem;
-            width: 50px;
-            height: 50px;
+            font-size: 1rem;
+            width: 40px;
+            height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -613,28 +632,51 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             }
         }
 
-        @media (max-width: 768px) {
-            .header {
-                padding: 1.5rem 1rem;
-            }
-            
-            .main-content {
-                padding: 2rem 1rem;
-            }
-            
-            .option-item {
-                padding: 1.5rem;
-            }
-            
-            .chart-section {
-                padding: 2rem;
-            }
-            
-            .controls {
-                top: 1rem;
-                right: 1rem;
-            }
-        }
+         @media (max-width: 768px) {
+             .header {
+                 padding: 1.5rem 1rem;
+             }
+
+             .header-content {
+                 flex-direction: column;
+                 gap: 1rem;
+             }
+
+             .spinning-logo {
+                 height: 40px;
+                 width: 40px;
+             }
+
+             .poll-title {
+                 font-size: clamp(1.5rem, 4vw, 2.5rem);
+                 margin-bottom: 0.5rem;
+             }
+             
+             .main-content {
+                 padding: 2rem 1rem;
+             }
+             
+             .option-item {
+                 padding: 1.5rem;
+             }
+             
+             .chart-section {
+                 padding: 2rem;
+             }
+             
+             .controls {
+                 top: 0.5rem;
+                 right: 0.5rem;
+                 gap: 0.25rem;
+             }
+
+             .control-btn {
+                 width: 35px;
+                 height: 35px;
+                 font-size: 0.9rem;
+                 padding: 0.5rem;
+             }
+         }
 
         /* Fullscreen styles */
         .fullscreen {
@@ -661,7 +703,10 @@ $totalVotes = array_sum(array_column($options, 'votes'));
 
         <!-- Header -->
         <div class="header">
-            <h1 class="poll-title"><?php echo htmlspecialchars($currentPoll['question']); ?></h1>
+            <div class="header-content">
+                <img src="assets/logo.png" alt="Logo" class="spinning-logo">
+                <h1 class="poll-title"><?php echo htmlspecialchars($currentPoll['question']); ?></h1>
+            </div>
              <div class="poll-meta">
                  <span id="totalVotes"><?php echo $totalVotes; ?></span> Stimme<span id="votesPlural"><?php echo $totalVotes !== 1 ? 'n' : ''; ?></span> • 
                  <?php echo count($options); ?> Option<?php echo count($options) !== 1 ? 'en' : ''; ?>
