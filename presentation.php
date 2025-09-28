@@ -179,32 +179,93 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             z-index: 1;
         }
 
-        .live-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: linear-gradient(135deg, var(--accent-secondary), #ff8a80);
-            padding: 0.4rem 1rem;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 107, 107, 0.3);
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-left: 1rem;
-            box-shadow: var(--shadow-glow);
-        }
+         .live-indicator {
+             display: inline-flex;
+             align-items: center;
+             gap: 0.5rem;
+             background: linear-gradient(135deg, #ff3b30, #ff6b6b);
+             padding: 0.4rem 1rem;
+             border-radius: 20px;
+             border: 1px solid rgba(255, 59, 48, 0.4);
+             font-size: 0.9rem;
+             font-weight: 600;
+             margin-left: 1rem;
+             position: relative;
+             overflow: hidden;
+             animation: liveGlow 3s ease-in-out infinite;
+         }
 
-        .live-dot {
-            width: 8px;
-            height: 8px;
-            background: #fff;
-            border-radius: 50%;
-            animation: livePulse 2s ease-in-out infinite;
-        }
+         .live-indicator::before {
+             content: '';
+             position: absolute;
+             top: 0;
+             left: -100%;
+             width: 100%;
+             height: 100%;
+             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+             animation: liveShine 2s ease-in-out infinite;
+         }
 
-        @keyframes livePulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.2); }
-        }
+         .live-dot {
+             width: 8px;
+             height: 8px;
+             background: #fff;
+             border-radius: 50%;
+             position: relative;
+             z-index: 1;
+             animation: livePulse 1.5s ease-in-out infinite;
+         }
+
+         .live-dot::after {
+             content: '';
+             position: absolute;
+             top: -4px;
+             left: -4px;
+             width: 16px;
+             height: 16px;
+             border: 2px solid rgba(255, 255, 255, 0.3);
+             border-radius: 50%;
+             animation: liveRipple 2s ease-out infinite;
+         }
+
+         @keyframes livePulse {
+             0%, 100% { 
+                 opacity: 1; 
+                 transform: scale(1);
+                 box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+             }
+             50% { 
+                 opacity: 0.8; 
+                 transform: scale(1.3);
+                 box-shadow: 0 0 0 4px rgba(255, 255, 255, 0);
+             }
+         }
+
+         @keyframes liveRipple {
+             0% {
+                 transform: scale(0.8);
+                 opacity: 1;
+             }
+             100% {
+                 transform: scale(2);
+                 opacity: 0;
+             }
+         }
+
+         @keyframes liveGlow {
+             0%, 100% {
+                 box-shadow: 0 0 5px rgba(255, 59, 48, 0.5);
+             }
+             50% {
+                 box-shadow: 0 0 20px rgba(255, 59, 48, 0.8), 0 0 30px rgba(255, 59, 48, 0.4);
+             }
+         }
+
+         @keyframes liveShine {
+             0% { left: -100%; }
+             50% { left: 100%; }
+             100% { left: 100%; }
+         }
 
         /* Main Content */
         .main-content {
@@ -273,17 +334,6 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             opacity: 0.9;
         }
 
-        .vote-count {
-            font-size: 2rem;
-            font-weight: 700;
-            display: block;
-        }
-
-        .percentage {
-            font-size: 1rem;
-            opacity: 0.7;
-        }
-
         .option-header {
             display: flex;
             justify-content: space-between;
@@ -307,10 +357,7 @@ $totalVotes = array_sum(array_column($options, 'votes'));
             font-size: 2rem;
             font-weight: 700;
             display: block;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-tertiary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: #00d4ff;
         }
 
         .percentage {
