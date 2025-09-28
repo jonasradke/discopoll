@@ -81,6 +81,10 @@ $totalVotes = array_sum(array_column($options, 'votes'));
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poll Presentation - <?php echo htmlspecialchars($currentPoll['question']); ?></title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="assets/favicon.ico">
+    
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
